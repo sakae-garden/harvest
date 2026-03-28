@@ -189,13 +189,12 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter'
 
   <!-- ══ 浸水タンク ══ -->
   <div id="tab-tank" class="tab">
-    <div style="margin-bottom:14px">
-      <div style="font-size:18px;font-weight:900;margin-bottom:8px">浸水タンク状態</div>
-      <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
-        <input type="date" id="view-tank-date" class="input" style="flex:1" onchange="loadTanks(this.value)">
-        <button class="btn-outline" style="padding:9px 14px;font-size:12px;white-space:nowrap" onclick="loadTanks(document.getElementById('view-tank-date').value)">↻ 読込</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div>
+        <div style="font-size:18px;font-weight:900;margin-bottom:3px">浸水タンク状態</div>
+        <div id="tank-date-disp" style="font-size:12px;color:var(--g);font-weight:600"></div>
       </div>
-      <div id="tank-date-disp" style="font-size:12px;color:var(--g);font-weight:600"></div>
+      <button class="btn-outline" style="padding:7px 14px;font-size:12px" onclick="loadTanks()">↻ 更新</button>
     </div>
     <div style="display:flex;gap:14px;margin-bottom:16px;flex-wrap:wrap">
       <div style="display:flex;align-items:center;gap:6px;font-size:12px">
@@ -284,18 +283,13 @@ function fmtDateLong(s){
 }
 
 function jsonp(url,base,ok,ng){
-  var n=base+'_'+(cbIdx++);
-  var done=false;
-  window[n]=function(res){ if(!done){done=true; ok(res);} cleanup(); };
-  var s=document.createElement('script');
-  s.src=url+'&callback='+n;
-  // GASリダイレクト問題でonerrorが来てもデータは保存済みの場合が多い
-  s.onerror=function(){
-    setTimeout(function(){ if(!done){done=true; if(ng) ng();} cleanup(); },500);
-  };
-  document.head.appendChild(s);
-  function cleanup(){ if(window[n]) delete window[n]; if(s.parentNode) s.parentNode.removeChild(s); }
-  setTimeout(function(){ if(!done){done=true; if(ng) ng();} cleanup(); },12000);
+  var n=base+'_'+(cbIdx++), s=document.createElement('script');
+  var t=setTimeout(function(){ cleanup(); if(ng) ng(); },15000);
+  function cleanup(){ clearTimeout(t); delete window[n]; if(s.parentNode) s.parentNode.removeChild(s); }
+  window[n]=function(d){ cleanup(); ok(d); };
+  s.onerror=function(){ cleanup(); if(ng) ng(); };
+  s.src=url+(url.indexOf('?')>-1?'&':'?')+'callback='+n;
+  document.body.appendChild(s);
 }
 
 function toast(msg,err){
@@ -304,12 +298,23 @@ function toast(msg,err){
   t.classList.add('show'); setTimeout(function(){ t.classList.remove('show'); },2500);
 }
 
+
+// リトライ付き汎用データ取得（最大3回）
+function fetchWithRetry(url, base, onSuccess, retries){
+  retries = retries || 0;
+  jsonp(url, base+'_r'+retries, function(res){
+    if(res && res.success){ onSuccess(res); }
+    else if(retries < 2){ setTimeout(function(){ fetchWithRetry(url,base,onSuccess,retries+1); },2000); }
+  }, function(){
+    if(retries < 2){ setTimeout(function(){ fetchWithRetry(url,base,onSuccess,retries+1); },2000); }
+    else { console.log('fetch failed after 3 attempts: '+url); }
+  });
+}
 document.addEventListener('DOMContentLoaded',function(){
   var td=today();
   document.getElementById('hdate').textContent=fmtDate(td);
   document.getElementById('w-date').value=td;
   document.getElementById('tank-date').value=td;
-  document.getElementById('view-tank-date').value=td;
   document.getElementById('r-date').value=td;
   buildTankInputs();
   loadEntries(); loadRecords(); loadTanks();
@@ -352,13 +357,9 @@ function addEntry(){
   jsonp(aeUrl,'ae',aeSuccess,aeError);
 }
 function loadEntries(){
-  function onOk(res){ if(res.success){ entries=res.entries||[]; renderTodayList(); renderHistory(); } }
-  function onErr(){
-    setTimeout(function(){
-      jsonp(API_URL+'?action=getEntries','ge_r',onOk,null);
-    },1000);
-  }
-  jsonp(API_URL+'?action=getEntries','ge',onOk,onErr);
+  fetchWithRetry(API_URL+'?action=getEntries','ge',function(res){
+    entries=res.entries||[]; renderTodayList(); renderHistory();
+  });
 }
 function renderTodayList(){
   var td=today();
@@ -445,29 +446,24 @@ function saveTanks(){
 }
 
 function loadTanks(dateStr){
-  // dateStrが指定なければtank-dateフィールドの値、それもなければ今日
-  var dt=dateStr||document.getElementById('tank-date').value||today();
-  document.getElementById('tank-date').value=dt;
-  var vtd=document.getElementById('view-tank-date'); if(vtd) vtd.value=dt;
-  function onOk(res){
-    if(!res.success) return;
-    var list=res.tanks||[];
+  // dateStrなしの場合、GAS側が最新日付を返す
+  var url=API_URL+'?action=getTanks'+(dateStr?'&date='+dateStr:'');
+  fetchWithRetry(url,'gt',function(res){
     tankSoak={}; tankNotes={};
-    list.forEach(function(t){ tankSoak[t.tank_no]=t.soak_num||0; tankNotes[t.tank_no]=t.notes||''; });
+    (res.tanks||[]).forEach(function(t){
+      tankSoak[t.tank_no]=t.soak_num||0; tankNotes[t.tank_no]=t.notes||'';
+    });
+    // GASが返した日付をtank-dateとtank-date-dispに反映
+    var d=res.date||dateStr||today();
+    var tf=document.getElementById('tank-date'); if(tf) tf.value=d;
     buildTankInputs();
     renderTankDisplay();
-  }
-  function onErr(){
-    setTimeout(function(){
-      jsonp(API_URL+'?action=getTanks&date='+dt,'gt_r',onOk,null);
-    },1000);
-  }
-  jsonp(API_URL+'?action=getTanks&date='+dt,'gt',onOk,onErr);
+  });
 }
 
 /* ════ タンク表示 ════ */
 function renderTankDisplay(){
-  var tankDate=document.getElementById('view-tank-date').value||document.getElementById('tank-date').value||today();
+  var tankDate=document.getElementById('tank-date').value||today();
   var hasAny=false;
   for(var n=1;n<=8;n++){ if(tankSoak[n]>0){ hasAny=true; break; } }
 
@@ -531,13 +527,9 @@ function addRecord(){
   jsonp(arUrl,'ar',arSuccess,arError);
 }
 function loadRecords(){
-  function onOk(res){ if(res.success){ records=res.records||[]; renderRecentRecords(); renderHistory(); } }
-  function onErr(){
-    setTimeout(function(){
-      jsonp(API_URL+'?action=getRecords','gr_r',onOk,null);
-    },1200);
-  }
-  jsonp(API_URL+'?action=getRecords','gr',onOk,onErr);
+  fetchWithRetry(API_URL+'?action=getRecords','gr',function(res){
+    records=res.records||[]; renderRecentRecords(); renderHistory();
+  });
 }
 function renderRecentRecords(){
   document.getElementById('rec-count').textContent=records.length;

@@ -162,7 +162,7 @@ var WORK_TYPES = {
   soak1: {label:'1番浸水', delay:12, yield_g:250, color:'#40c4ff', icon:'💧'},
   soak2: {label:'2番浸水', delay:12, yield_g:150, color:'#ce93d8', icon:'💜'},
 };
-var cbIdx=0, selIniType='unripe_bag';
+var cbIdx=0, selIniType='bag';
 var entries=[], records=[], initialStock=[];
 
 function today(){ return new Date().toISOString().split('T')[0]; }
@@ -195,7 +195,8 @@ function calcForecast(ents, startDate, days){
   var map={};
   for(var i=0;i<days;i++) map[addDays(startDate,i)]={total:0,breakdown:{}};
   ents.forEach(function(e){
-    var cfg=WORK_TYPES[e.type]; if(!cfg) return;
+    var type=e.type==='unripe_bag'||e.type==='ripe_bag'?'bag':e.type;
+    var cfg=WORK_TYPES[type]; if(!cfg) return;
     var hd=addDays(e.date,cfg.delay);
     if(map[hd]){
       var kg=e.count*cfg.yield_g/1000;
@@ -394,7 +395,7 @@ function renderIniLocalList(){
   var el=document.getElementById('ini-list');
   if(!all.length){ el.innerHTML='<div class="empty">初期在庫はまだ登録されていません</div>'; return; }
   el.innerHTML=all.map(function(e,i){
-    var cfg=WORK_TYPES[e.type];
+    var cfg=WORK_TYPES[e.type]||WORK_TYPES['bag'];
     var hd=addDays(e.date,cfg.delay);
     var isLocal=e.id&&e.id.toString().indexOf('local_')===0;
     return '<div class="init-row">'
