@@ -257,7 +257,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter'
 <div class="toast" id="toast"></div>
 
 <script>
-var API_URL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec';
+var API_URL = 'https://script.google.com/macros/s/AKfycbw8BfOGR-zFremHC58Huz57dFJxmPxeEe5sDotr05sDbZIjD56269S79ikKWKpovdP1/exec';
 
 var WORK_TYPES = {
   bag:   {label:'袋出し', delay:10, count:true,  color:'#00e676', icon:'🍄'},
@@ -310,13 +310,45 @@ function fetchWithRetry(url, base, onSuccess, retries){
     else { console.log('fetch failed after 3 attempts: '+url); }
   });
 }
+
+// ══ localStorage キャッシュ ══════════════════════════════════════
+// GAS読み込みが失敗してもページ再読み込み後も前回データを保持する
+var LS_ENTRIES = 'sge_entries';
+var LS_RECORDS = 'sge_records';
+var LS_TANKS   = 'sge_tanks';
+
+function lsSave(key, data){
+  try{ localStorage.setItem(key, JSON.stringify(data)); }catch(e){}
+}
+function lsLoad(key){
+  try{ var v=localStorage.getItem(key); return v?JSON.parse(v):null; }catch(e){ return null; }
+}
+// ════════════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded',function(){
   var td=today();
   document.getElementById('hdate').textContent=fmtDate(td);
   document.getElementById('w-date').value=td;
   document.getElementById('tank-date').value=td;
   document.getElementById('r-date').value=td;
+
+  // まずlocalStorageから即座に復元（ページ再読み込み後も表示される）
+  var cachedEntries = lsLoad(LS_ENTRIES);
+  if(cachedEntries){ entries=cachedEntries; renderTodayList(); renderHistory(); }
+
+  var cachedRecords = lsLoad(LS_RECORDS);
+  if(cachedRecords){ records=cachedRecords; renderRecentRecords(); renderHistory(); }
+
+  var cachedTanks = lsLoad(LS_TANKS);
+  if(cachedTanks){
+    tankSoak=cachedTanks.soak||{}; tankNotes=cachedTanks.notes||{};
+    var td2=cachedTanks.date||td;
+    document.getElementById('tank-date').value=td2;
+  }
+  // キャッシュの有無に関わらず必ずタンクUIを構築
   buildTankInputs();
+  if(cachedTanks) renderTankDisplay();
+
+  // その後GASから最新データを取得（バックグラウンドで更新）
   loadEntries(); loadRecords(); loadTanks();
 });
 
@@ -341,24 +373,28 @@ function addEntry(){
     btn.textContent='＋ 袋出しを記録する';
     if(res.success){
       entries.push({id:res.id||('local_'+Date.now()),date:dt,type:'bag',count:cnt,staff:''});
+      lsSave(LS_ENTRIES, entries);
       document.getElementById('w-count').value='';
       btn.disabled=true;
       toast('✅ 記録しました'); renderTodayList();
     } else { btn.disabled=false; toast('エラー: '+res.error,true); }
   }
   function aeError(){
-    // GASリダイレクト問題: データは保存済みの可能性が高いので再取得して確認
     btn.textContent='＋ 袋出しを記録する'; btn.disabled=false;
-    setTimeout(function(){
-      loadEntries();
-      toast('✅ 記録しました');
-    },800);
+    // GASリダイレクト問題: ローカルに追加してUIに反映、バックグラウンドでGASから再取得
+    entries.push({id:'local_'+Date.now(),date:dt,type:'bag',count:cnt,staff:''});
+    lsSave(LS_ENTRIES, entries);
+    document.getElementById('w-count').value='';
+    toast('✅ 記録しました'); renderTodayList();
+    setTimeout(loadEntries, 2000);
   }
   jsonp(aeUrl,'ae',aeSuccess,aeError);
 }
 function loadEntries(){
   fetchWithRetry(API_URL+'?action=getEntries','ge',function(res){
-    entries=res.entries||[]; renderTodayList(); renderHistory();
+    entries=res.entries||[];
+    lsSave(LS_ENTRIES, entries);
+    renderTodayList(); renderHistory();
   });
 }
 function renderTodayList(){
@@ -433,14 +469,18 @@ function saveTanks(){
   // データは保存される。onerror時もloadTanksで確認する。
   jsonp(API_URL+'?action=saveTanks&date='+dt+'&tanks='+encodeURIComponent(JSON.stringify(list)),'svt',
     function(res){
-      if(res.success){ toast('💧 保存しました'); loadTanks(dt); }
+      if(res.success){
+        lsSave(LS_TANKS, {soak:tankSoak, notes:tankNotes, date:dt});
+        toast('💧 保存しました'); loadTanks(dt);
+      }
       else toast('エラー: '+res.error,true);
     },
     function(){
       // GASリダイレクト問題でonerrorが来ても実際は保存済みのことが多い
       // 少し待ってからloadTanksで確認
-      setTimeout(function(){ loadTanks(dt); },800);
-      toast('💧 保存しました（確認中）');
+      lsSave(LS_TANKS, {soak:tankSoak, notes:tankNotes, date:dt});
+      toast('💧 保存しました');
+      setTimeout(function(){ loadTanks(dt); },2000);
     }
   );
 }
@@ -453,9 +493,9 @@ function loadTanks(dateStr){
     (res.tanks||[]).forEach(function(t){
       tankSoak[t.tank_no]=t.soak_num||0; tankNotes[t.tank_no]=t.notes||'';
     });
-    // GASが返した日付をtank-dateとtank-date-dispに反映
     var d=res.date||dateStr||today();
     var tf=document.getElementById('tank-date'); if(tf) tf.value=d;
+    lsSave(LS_TANKS, {soak:tankSoak, notes:tankNotes, date:d});
     buildTankInputs();
     renderTankDisplay();
   });
@@ -507,7 +547,11 @@ function addRecord(){
   var arUrl=API_URL+'?action=addRecord&date='+dt+'&cut1='+c1+'&cut2plus='+c2+'&damaged='+dm+'&staff=';
   function arSuccess(res){
     if(res.success){
-      loadRecords();
+      var newRec={id:res.id||('local_'+Date.now()),date:dt,cut1:c1,cut2plus:c2,damaged:dm,staff:''};
+      records=records.filter(function(r){ return r.date!==dt; });
+      records.push(newRec);
+      lsSave(LS_RECORDS, records);
+      renderRecentRecords(); renderHistory();
       document.getElementById('r-cut1').value='';
       document.getElementById('r-cut2').value='';
       document.getElementById('r-dam').value='';
@@ -515,20 +559,24 @@ function addRecord(){
     } else toast('エラー: '+res.error,true);
   }
   function arError(){
-    // GASリダイレクト問題: 保存済みの可能性が高いので再取得
-    setTimeout(function(){
-      loadRecords();
-      document.getElementById('r-cut1').value='';
-      document.getElementById('r-cut2').value='';
-      document.getElementById('r-dam').value='';
-      toast('✅ 収穫量を記録しました');
-    },800);
+    var newRec={id:'local_'+Date.now(),date:dt,cut1:c1,cut2plus:c2,damaged:dm,staff:''};
+    records=records.filter(function(r){ return r.date!==dt; });
+    records.push(newRec);
+    lsSave(LS_RECORDS, records);
+    renderRecentRecords(); renderHistory();
+    document.getElementById('r-cut1').value='';
+    document.getElementById('r-cut2').value='';
+    document.getElementById('r-dam').value='';
+    toast('✅ 収穫量を記録しました');
+    setTimeout(loadRecords, 2000);
   }
   jsonp(arUrl,'ar',arSuccess,arError);
 }
 function loadRecords(){
   fetchWithRetry(API_URL+'?action=getRecords','gr',function(res){
-    records=res.records||[]; renderRecentRecords(); renderHistory();
+    records=res.records||[];
+    lsSave(LS_RECORDS, records);
+    renderRecentRecords(); renderHistory();
   });
 }
 function renderRecentRecords(){
