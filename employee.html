@@ -189,12 +189,13 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter'
 
   <!-- ══ 浸水タンク ══ -->
   <div id="tab-tank" class="tab">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">
-      <div>
-        <div style="font-size:18px;font-weight:900;margin-bottom:3px">浸水タンク状態</div>
-        <div id="tank-date-disp" style="font-size:12px;color:var(--g);font-weight:600"></div>
+    <div style="margin-bottom:14px">
+      <div style="font-size:18px;font-weight:900;margin-bottom:8px">浸水タンク状態</div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+        <input type="date" id="view-tank-date" class="input" style="flex:1" onchange="loadTanks(this.value)">
+        <button class="btn-outline" style="padding:9px 14px;font-size:12px;white-space:nowrap" onclick="loadTanks(document.getElementById('view-tank-date').value)">↻ 読込</button>
       </div>
-      <button class="btn-outline" style="padding:7px 14px;font-size:12px" onclick="loadTanks()">↻ 更新</button>
+      <div id="tank-date-disp" style="font-size:12px;color:var(--g);font-weight:600"></div>
     </div>
     <div style="display:flex;gap:14px;margin-bottom:16px;flex-wrap:wrap">
       <div style="display:flex;align-items:center;gap:6px;font-size:12px">
@@ -308,6 +309,7 @@ document.addEventListener('DOMContentLoaded',function(){
   document.getElementById('hdate').textContent=fmtDate(td);
   document.getElementById('w-date').value=td;
   document.getElementById('tank-date').value=td;
+  document.getElementById('view-tank-date').value=td;
   document.getElementById('r-date').value=td;
   buildTankInputs();
   loadEntries(); loadRecords(); loadTanks();
@@ -350,9 +352,13 @@ function addEntry(){
   jsonp(aeUrl,'ae',aeSuccess,aeError);
 }
 function loadEntries(){
-  jsonp(API_URL+'?action=getEntries','ge',function(res){
-    if(res.success){ entries=res.entries||[]; renderTodayList(); }
-  },null);
+  function onOk(res){ if(res.success){ entries=res.entries||[]; renderTodayList(); renderHistory(); } }
+  function onErr(){
+    setTimeout(function(){
+      jsonp(API_URL+'?action=getEntries','ge_r',onOk,null);
+    },1000);
+  }
+  jsonp(API_URL+'?action=getEntries','ge',onOk,onErr);
 }
 function renderTodayList(){
   var td=today();
@@ -426,34 +432,42 @@ function saveTanks(){
   // データは保存される。onerror時もloadTanksで確認する。
   jsonp(API_URL+'?action=saveTanks&date='+dt+'&tanks='+encodeURIComponent(JSON.stringify(list)),'svt',
     function(res){
-      if(res.success){ toast('💧 保存しました'); loadTanks(); }
+      if(res.success){ toast('💧 保存しました'); loadTanks(dt); }
       else toast('エラー: '+res.error,true);
     },
     function(){
       // GASリダイレクト問題でonerrorが来ても実際は保存済みのことが多い
       // 少し待ってからloadTanksで確認
-      setTimeout(function(){ loadTanks(); },800);
+      setTimeout(function(){ loadTanks(dt); },800);
       toast('💧 保存しました（確認中）');
     }
   );
 }
 
-function loadTanks(){
-  var td=today();
-  document.getElementById('tank-date').value=td;
-  jsonp(API_URL+'?action=getTanks&date='+td,'gt',function(res){
+function loadTanks(dateStr){
+  // dateStrが指定なければtank-dateフィールドの値、それもなければ今日
+  var dt=dateStr||document.getElementById('tank-date').value||today();
+  document.getElementById('tank-date').value=dt;
+  var vtd=document.getElementById('view-tank-date'); if(vtd) vtd.value=dt;
+  function onOk(res){
     if(!res.success) return;
     var list=res.tanks||[];
     tankSoak={}; tankNotes={};
     list.forEach(function(t){ tankSoak[t.tank_no]=t.soak_num||0; tankNotes[t.tank_no]=t.notes||''; });
     buildTankInputs();
     renderTankDisplay();
-  },null);
+  }
+  function onErr(){
+    setTimeout(function(){
+      jsonp(API_URL+'?action=getTanks&date='+dt,'gt_r',onOk,null);
+    },1000);
+  }
+  jsonp(API_URL+'?action=getTanks&date='+dt,'gt',onOk,onErr);
 }
 
 /* ════ タンク表示 ════ */
 function renderTankDisplay(){
-  var tankDate=document.getElementById('tank-date').value||today();
+  var tankDate=document.getElementById('view-tank-date').value||document.getElementById('tank-date').value||today();
   var hasAny=false;
   for(var n=1;n<=8;n++){ if(tankSoak[n]>0){ hasAny=true; break; } }
 
@@ -517,9 +531,13 @@ function addRecord(){
   jsonp(arUrl,'ar',arSuccess,arError);
 }
 function loadRecords(){
-  jsonp(API_URL+'?action=getRecords','gr',function(res){
-    if(res.success){ records=res.records||[]; renderRecentRecords(); }
-  },null);
+  function onOk(res){ if(res.success){ records=res.records||[]; renderRecentRecords(); renderHistory(); } }
+  function onErr(){
+    setTimeout(function(){
+      jsonp(API_URL+'?action=getRecords','gr_r',onOk,null);
+    },1200);
+  }
+  jsonp(API_URL+'?action=getRecords','gr',onOk,onErr);
 }
 function renderRecentRecords(){
   document.getElementById('rec-count').textContent=records.length;

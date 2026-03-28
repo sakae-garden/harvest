@@ -342,9 +342,9 @@ function renderForecast(){
         +'</div>'
 
         // 収穫量
-        +(fc.total>0?'<div style="font-size:11px;font-weight:700;color:var(--g);line-height:1.2">'+fc.total.toFixed(1)+'<span style="font-size:9px;font-weight:400">kg</span></div>':'')
+        +(fc.total>0?'<div style="font-size:12px;font-weight:800;color:var(--g);line-height:1.2">'+fc.total.toFixed(1)+'<span style="font-size:10px;font-weight:600">kg</span></div>':'')
         // 売上
-        +(fc.total>0?'<div style="font-size:9px;color:var(--text2)">'+(fc.total*PRICE/10000).toFixed(1)+'万</div>':'')
+        +(fc.total>0?'<div style="font-size:11px;font-weight:700;color:var(--orange)">¥'+(fc.total*PRICE).toLocaleString()+'</div>':'')
         // 実績マーク
         +(rec?'<div style="font-size:9px;color:var(--orange)">実績✓</div>':'')
         +'</div></td>';
@@ -353,24 +353,10 @@ function renderForecast(){
   });
   html+='</tbody></table></div>';
 
-  // 凡例
-  var HARVEST_LABELS={'bag':'1番刈り取り','soak1':'2番刈り取り','soak2':'3番刈り取り'};
-  html+='<div style="display:flex;gap:12px;margin-top:10px;flex-wrap:wrap">'
-    +Object.keys(WORK_TYPES).map(function(k){
-      var v=WORK_TYPES[k];
-      return '<div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2)">'
-        +'<span style="width:10px;height:10px;border-radius:2px;background:'+v.color+';display:inline-block"></span>'
-        +(HARVEST_LABELS[k]||v.label)
-        +'</div>';
-    }).join('')
-    +'</div>';
-
   document.getElementById('fc-list').innerHTML=html;
 }
 
 // ── 初期在庫 ──────────────────────────────────────────────
-
-// ── 初期在庫 ──────────────────────────────────────────────────
 function buildIniTypeGrid(){
   var g=document.getElementById('ini-type-grid');
   g.innerHTML=Object.keys(WORK_TYPES).map(function(k){
