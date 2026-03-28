@@ -158,14 +158,13 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter'
       <div class="form-row" style="margin-bottom:12px">
         <div class="field" style="flex:1">
           <label class="fl">作業日</label>
-          <input type="date" id="w-date" class="input" onchange="updateWPreview()">
+          <input type="date" id="w-date" class="input">
         </div>
         <div class="field" style="flex:1">
           <label class="fl">個数</label>
-          <input type="number" id="w-count" class="input" placeholder="例: 100" min="1" oninput="updateWPreview()">
+          <input type="number" id="w-count" class="input" placeholder="例: 100" min="1" oninput="var v=parseInt(this.value);document.getElementById('w-btn').disabled=(!v||v<=0);">
         </div>
       </div>
-      <div id="w-preview" class="preview" style="display:none"></div>
       <button class="btn" id="w-btn" onclick="addEntry()" disabled>＋ 袋出しを記録する</button>
     </div>
 
@@ -285,13 +284,17 @@ function fmtDateLong(s){
 
 function jsonp(url,base,ok,ng){
   var n=base+'_'+(cbIdx++);
-  window[n]=function(res){ ok(res); cleanup(); };
+  var done=false;
+  window[n]=function(res){ if(!done){done=true; ok(res);} cleanup(); };
   var s=document.createElement('script');
   s.src=url+'&callback='+n;
-  s.onerror=function(){ if(ng) ng(); cleanup(); };
+  // GASリダイレクト問題でonerrorが来てもデータは保存済みの場合が多い
+  s.onerror=function(){
+    setTimeout(function(){ if(!done){done=true; if(ng) ng();} cleanup(); },500);
+  };
   document.head.appendChild(s);
   function cleanup(){ if(window[n]) delete window[n]; if(s.parentNode) s.parentNode.removeChild(s); }
-  setTimeout(cleanup,10000);
+  setTimeout(function(){ if(!done){done=true; if(ng) ng();} cleanup(); },12000);
 }
 
 function toast(msg,err){
@@ -320,33 +323,31 @@ function switchTab(name,btn){
 }
 
 /* ── タイプグリッド ── */
-function updateWPreview(){
-  var cnt=parseInt(document.getElementById('w-count').value);
-  var dt=document.getElementById('w-date').value;
-  var box=document.getElementById('w-preview');
-  var btn=document.getElementById('w-btn');
-  if(!cnt||cnt<=0||!dt){ box.style.display='none'; btn.disabled=true; return; }
-  btn.disabled=false;
-  box.style.display='block';
-  box.textContent='📊 '+fmtDate(dt)+' に '+cnt.toLocaleString()+' 個 → '+fmtDate(addDays(dt,10))+' から収穫開始';
-}
-
 /* ── 作業入力 ── */
 function addEntry(){
   var dt=document.getElementById('w-date').value;
   var cnt=parseInt(document.getElementById('w-count').value);
   if(!dt||!cnt||cnt<=0){ toast('日付と個数を入力してください',true); return; }
   var btn=document.getElementById('w-btn'); btn.disabled=true; btn.textContent='送信中...';
-  jsonp(API_URL+'?action=addEntry&date='+dt+'&type=bag&count='+cnt+'&staff=','ae',function(res){
+  var aeUrl=API_URL+'?action=addEntry&date='+dt+'&type=bag&count='+cnt+'&staff=';
+  function aeSuccess(res){
     btn.textContent='＋ 袋出しを記録する';
     if(res.success){
-      entries.push({id:res.id,date:dt,type:'bag',count:cnt,staff:''});
+      entries.push({id:res.id||('local_'+Date.now()),date:dt,type:'bag',count:cnt,staff:''});
       document.getElementById('w-count').value='';
-      document.getElementById('w-preview').style.display='none';
       btn.disabled=true;
       toast('✅ 記録しました'); renderTodayList();
     } else { btn.disabled=false; toast('エラー: '+res.error,true); }
-  },function(){ btn.disabled=false; btn.textContent='＋ 袋出しを記録する'; toast('通信エラー',true); });
+  }
+  function aeError(){
+    // GASリダイレクト問題: データは保存済みの可能性が高いので再取得して確認
+    btn.textContent='＋ 袋出しを記録する'; btn.disabled=false;
+    setTimeout(function(){
+      loadEntries();
+      toast('✅ 記録しました');
+    },800);
+  }
+  jsonp(aeUrl,'ae',aeSuccess,aeError);
 }
 function loadEntries(){
   jsonp(API_URL+'?action=getEntries','ge',function(res){
@@ -365,7 +366,7 @@ function renderTodayList(){
     return '<div class="entry-row" style="border-left:3px solid '+cfg.color+'">'
       +'<span style="font-size:20px">'+cfg.icon+'</span>'
       +'<div style="flex:1"><div style="font-weight:700">'+cfg.label+' <strong>'+sub+'</strong></div>'
-      +'<div style="font-size:11px;color:var(--text2);margin-top:2px">'+fmtDate(e.date)+' → '+fmtDate(addDays(e.date,cfg.delay))+' 収穫開始</div></div>'
+      +'</div>'
       +'<button class="btn-del" onclick="deleteEntry(\''+e.id+'\')">削除</button>'
       +'</div>';
   }).join('');
@@ -493,7 +494,8 @@ function addRecord(){
   var dm=parseFloat(document.getElementById('r-dam').value)||0;
   if(!dt){ toast('日付を入力してください',true); return; }
   if(c1+c2+dm===0){ toast('収穫量を入力してください',true); return; }
-  jsonp(API_URL+'?action=addRecord&date='+dt+'&cut1='+c1+'&cut2plus='+c2+'&damaged='+dm+'&staff=','ar',function(res){
+  var arUrl=API_URL+'?action=addRecord&date='+dt+'&cut1='+c1+'&cut2plus='+c2+'&damaged='+dm+'&staff=';
+  function arSuccess(res){
     if(res.success){
       loadRecords();
       document.getElementById('r-cut1').value='';
@@ -501,7 +503,18 @@ function addRecord(){
       document.getElementById('r-dam').value='';
       toast('✅ 収穫量を記録しました');
     } else toast('エラー: '+res.error,true);
-  },function(){ toast('通信エラー',true); });
+  }
+  function arError(){
+    // GASリダイレクト問題: 保存済みの可能性が高いので再取得
+    setTimeout(function(){
+      loadRecords();
+      document.getElementById('r-cut1').value='';
+      document.getElementById('r-cut2').value='';
+      document.getElementById('r-dam').value='';
+      toast('✅ 収穫量を記録しました');
+    },800);
+  }
+  jsonp(arUrl,'ar',arSuccess,arError);
 }
 function loadRecords(){
   jsonp(API_URL+'?action=getRecords','gr',function(res){

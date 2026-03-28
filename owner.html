@@ -66,8 +66,6 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter'
 .day-row:hover{background:var(--bg3)}
 .day-row.today{background:rgba(0,230,118,.06);border-color:var(--gdim)}
 .today-badge{font-size:9px;background:var(--g);color:#000;border-radius:4px;padding:1px 5px;font-weight:800;width:fit-content;letter-spacing:.3px}
-.bar-track{height:6px;background:var(--bg4);border-radius:3px;overflow:hidden;display:flex;margin-bottom:3px}
-.bar-seg{height:100%;transition:width .3s}
 .kg-num{font-size:13px;font-weight:700;color:#fff}
 .yen-small{font-size:11px;color:var(--text2)}
 
@@ -143,16 +141,14 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter'
       </div>
       <div style="display:flex;gap:10px;margin-top:12px">
         <button class="btn btn-sm" onclick="addInitial()">＋ 追加</button>
-        <button class="btn-outline" onclick="saveInitial()">💾 確定・保存</button>
       </div>
     </div>
 
     <div class="section-title">登録済み初期在庫 <span class="badge" id="ini-count-badge">0</span></div>
     <div id="ini-list"></div>
-    <div style="margin-top:12px">
-      <button class="btn-outline" style="color:var(--red);border-color:rgba(255,82,82,.3)" onclick="clearInitial()">
-        🗑 全クリア
-      </button>
+    <div style="margin-top:12px;display:flex;gap:10px">
+      <button class="btn" style="flex:1" onclick="saveInitial()">💾 確定・保存する</button>
+      <button class="btn-outline" style="color:var(--red);border-color:rgba(255,82,82,.3)" onclick="clearInitial()">🗑 全クリア</button>
     </div>
   </div>
 </div>
@@ -332,16 +328,8 @@ function renderForecast(){
       var monthNum=parseInt(d.slice(5,7));
       var isNewMonth=(dayNum===1);
       var textColor=dow===0?'#ff5252':dow===6?'#40c4ff':'var(--text)';
-      var barPct=fc.total>0?(fc.total/maxKg*100):0;
 
-      // 収穫量の積み上げバー（小さく）
-      var bars='';
-      if(fc.total>0){
-        Object.keys(fc.breakdown).forEach(function(type){
-          var wt=WORK_TYPES[type]; if(!wt) return;
-          bars+='<div style="height:100%;width:'+(fc.breakdown[type]/maxKg*100)+'%;background:'+wt.color+';float:left"></div>';
-        });
-      }
+
 
       html+='<td style="padding:3px 2px;vertical-align:top;height:72px">'
         +'<div style="border-radius:8px;padding:4px 5px;height:100%;'
@@ -352,11 +340,7 @@ function renderForecast(){
         +(isNewMonth?'<span style="font-size:9px;color:var(--text2)">'+monthNum+'月</span>':'')
         +(isToday?'<span style="font-size:9px;background:var(--g);color:#000;border-radius:10px;padding:0 4px;font-weight:800">'+dayNum+'</span>':dayNum)
         +'</div>'
-        // バー
-        +(fc.total>0?
-          '<div style="height:4px;background:var(--bg4);border-radius:2px;overflow:hidden;margin:3px 0;clear:both"><div style="height:100%;overflow:hidden">'+bars+'</div></div>':
-          '<div style="height:4px;margin:3px 0"></div>'
-        )
+
         // 収穫量
         +(fc.total>0?'<div style="font-size:11px;font-weight:700;color:var(--g);line-height:1.2">'+fc.total.toFixed(1)+'<span style="font-size:9px;font-weight:400">kg</span></div>':'')
         // 売上
@@ -370,12 +354,13 @@ function renderForecast(){
   html+='</tbody></table></div>';
 
   // 凡例
+  var HARVEST_LABELS={'bag':'1番刈り取り','soak1':'2番刈り取り','soak2':'3番刈り取り'};
   html+='<div style="display:flex;gap:12px;margin-top:10px;flex-wrap:wrap">'
     +Object.keys(WORK_TYPES).map(function(k){
       var v=WORK_TYPES[k];
       return '<div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2)">'
         +'<span style="width:10px;height:10px;border-radius:2px;background:'+v.color+';display:inline-block"></span>'
-        +v.icon+' '+v.label+'（'+v.delay+'日後 '+v.yield_g+'g）'
+        +(HARVEST_LABELS[k]||v.label)
         +'</div>';
     }).join('')
     +'</div>';
@@ -413,7 +398,7 @@ function addInitial(){
   var count=parseInt(document.getElementById('ini-count').value);
   if(!date||!count||count<=0){ alert('日付と個数を入力してください'); return; }
   iniLocal.push({id:'local_'+Date.now(),date:date,type:selIniType,count:count});
-  document.getElementById('ini-count').value='';
+  // 個数はクリアしない（連続入力のため）
   renderIniLocalList();
 }
 
