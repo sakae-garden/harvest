@@ -77,9 +77,6 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter'
 .legend-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
 
 /* SIM METRICS */
-.sim-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
-.metric-card{background:var(--bg3);border-radius:8px;padding:12px 10px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:3px;border-top:2px solid transparent}
-.metric-num{font-size:19px;font-weight:800;line-height:1.1}
 
 /* SECTION */
 .section-title{font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px;letter-spacing:.5px;text-transform:uppercase;display:flex;align-items:center;gap:8px}
@@ -91,8 +88,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter'
 
 @media(max-width:480px){
   .form-row{grid-template-columns:1fr}
-  .sim-metrics{grid-template-columns:1fr 1fr}
-  .summary-num{font-size:20px}
+    .summary-num{font-size:20px}
 }
 </style>
 </head>
@@ -112,17 +108,12 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter'
 <nav class="nav">
   <button class="nav-btn active" onclick="switchTab('forecast',this)"><span>📅</span>収穫予測</button>
   <button class="nav-btn" onclick="switchTab('initial',this)"><span>🌱</span>初期在庫</button>
-  <button class="nav-btn" onclick="switchTab('sim',this)"><span>🔮</span>シミュレーター</button>
 </nav>
 
 <div class="main">
 
   <!-- ══ 収穫予測タブ ══ -->
   <div id="tab-forecast" class="tab active">
-    <div class="summary" id="fc-summary">
-      <div class="summary-item"><div class="summary-num">—</div><div class="summary-label">読み込み中...</div></div>
-    </div>
-    <div class="legend" id="fc-legend"></div>
     <div id="fc-list" class="loading">作業データを読み込み中...</div>
   </div>
 
@@ -164,44 +155,16 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter'
       </button>
     </div>
   </div>
-
-  <!-- ══ シミュレータータブ ══ -->
-  <div id="tab-sim" class="tab">
-    <div class="card">
-      <div class="card-title">🔮 袋出し数を入力（毎日同数の場合）</div>
-      <p style="font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.7">
-        毎日同じ数量を袋出しする前提で60日間の収穫・売上を試算します。<br>
-        袋出しの20日後に1番浸水、その12日後に2番浸水を自動計算。<br>
-        初期在庫の予測収穫も加算されます。
-      </p>
-      <div class="form-row">
-        <div class="field">
-          <label class="field-label">🌿 袋出し（未熟）/ 日</label>
-          <input type="number" id="sim-u" class="input" placeholder="例: 50" min="0" oninput="updateSimMetrics()">
-        </div>
-        <div class="field">
-          <label class="field-label">🍄 袋出し（完熟）/ 日</label>
-          <input type="number" id="sim-r" class="input" placeholder="例: 30" min="0" oninput="updateSimMetrics()">
-        </div>
-      </div>
-      <div id="sim-metrics" class="sim-metrics" style="display:none"></div>
-      <button class="btn" id="sim-btn" onclick="runSim()" disabled>🔮 シミュレーション実行</button>
-    </div>
-    <div id="sim-summary" style="display:none"></div>
-    <div id="sim-list"></div>
-  </div>
-
 </div>
 
 <script>
-var API_URL = 'https://script.google.com/macros/s/AKfycbw8BfOGR-zFremHC58Huz57dFJxmPxeEe5sDotr05sDbZIjD56269S79ikKWKpovdP1/exec'; 
+var API_URL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec'; // ← GASのURLに書き換え
 
 var PRICE = 1500;
 var WORK_TYPES = {
-  unripe_bag:{label:'袋出し（未熟）',delay:10,yield_g:200,color:'#00e676',icon:'🌿'},
-  ripe_bag:  {label:'袋出し（完熟）',delay:10,yield_g:400,color:'#ff9100',icon:'🍄'},
-  soak1:     {label:'1番浸水',delay:12,yield_g:200,color:'#40c4ff',icon:'💧'},
-  soak2:     {label:'2番浸水',delay:12,yield_g:150,color:'#ce93d8',icon:'💜'},
+  bag:   {label:'袋出し',  delay:10, yield_g:400, color:'#00e676', icon:'🍄'},
+  soak1: {label:'1番浸水', delay:12, yield_g:250, color:'#40c4ff', icon:'💧'},
+  soak2: {label:'2番浸水', delay:12, yield_g:150, color:'#ce93d8', icon:'💜'},
 };
 var cbIdx=0, selIniType='unripe_bag';
 var entries=[], records=[], initialStock=[];
@@ -270,65 +233,111 @@ function switchTab(name,btn){
   btn.classList.add('active');
 }
 
-// ── 収穫予測レンダリング ─────────────────────────────────────
-function renderFcLegend(){
-  document.getElementById('fc-legend').innerHTML=Object.keys(WORK_TYPES).map(function(k){
-    var v=WORK_TYPES[k];
-    return '<div class="legend-item"><span class="legend-dot" style="background:'+v.color+'"></span><span>'+v.icon+' '+v.label+'</span></div>';
-  }).join('');
-}
+// ── 収穫予測レンダリング（カレンダー形式）──────────────────
+function renderFcLegend(){}  // 不要（削除済み）
 
 function renderForecast(){
   var td=today();
-  // entries + initialStock を合算
   var allEntries=entries.concat(initialStock);
-  var forecast=calcForecast(allEntries, addDays(td,-2), 45);
+  var forecast=calcForecast(allEntries, td, 32);
   var recMap={};
   records.forEach(function(r){ recMap[r.date]=r; });
-  var days=Object.keys(forecast).sort();
-  var futureDays=days.filter(function(d){ return d>=td; });
-  var totalKg=futureDays.reduce(function(s,d){ return s+forecast[d].total; },0);
-  var maxKg=Math.max.apply(null,Object.values(forecast).map(function(v){ return v.total; }).concat([1]));
 
-  // サマリー
-  document.getElementById('fc-summary').innerHTML=
-    '<div class="summary-item"><div class="summary-num">'+fmtKg(totalKg)+'<span class="summary-unit">kg</span></div><div class="summary-label">今後45日 予測収穫</div></div>'
-    +'<div class="summary-div"></div>'
-    +'<div class="summary-item"><div class="summary-num yen">'+(totalKg*PRICE/10000).toFixed(1)+'<span class="summary-unit">万円</span></div><div class="summary-label">予測売上</div></div>'
-    +'<div class="summary-div"></div>'
-    +'<div class="summary-item"><div class="summary-num" style="color:var(--blue)">'+allEntries.length+'<span class="summary-unit">件</span></div><div class="summary-label">登録作業数</div></div>';
+  // 今日から30日分を取得
+  var days=[];
+  for(var i=0;i<30;i++) days.push(addDays(td,i));
 
-  // 日別
-  document.getElementById('fc-list').innerHTML=days.map(function(d){
-    var fc=forecast[d], rec=recMap[d];
-    var isToday=(d===td), isPast=(d<td);
-    var totalActual=rec?rec.cut1+rec.cut2plus+rec.damaged:null;
-    var diff=totalActual!==null?totalActual-fc.total:null;
-    if(!fc.total&&!rec&&isPast) return '';
+  // 週ごとにグループ化（今日の曜日から始まる）
+  var weeks=[];
+  var week=[];
+  var todayDow=new Date(td+'T00:00:00').getDay(); // 0=日
+  // 先頭の空白セル
+  for(var p=0;p<todayDow;p++) week.push(null);
+  days.forEach(function(d){
+    week.push(d);
+    if(week.length===7){ weeks.push(week); week=[]; }
+  });
+  if(week.length>0){
+    while(week.length<7) week.push(null);
+    weeks.push(week);
+  }
 
-    var bars=Object.keys(fc.breakdown).map(function(type){
-      return '<div class="bar-seg" style="width:'+((fc.breakdown[type]/maxKg)*100)+'%;background:'+WORK_TYPES[type].color+'"></div>';
-    }).join('');
+  var DOW=['日','月','火','水','木','金','土'];
+  var maxKg=Math.max.apply(null,days.map(function(d){ return forecast[d]?forecast[d].total:0; }).concat([1]));
 
-    var bdown=fc.total>0?Object.keys(fc.breakdown).map(function(type){
-      return '<span style="font-size:11px;color:'+WORK_TYPES[type].color+'">'+WORK_TYPES[type].icon+fmtKg(fc.breakdown[type])+'kg</span>';
-    }).join(''):'<span style="font-size:11px;color:var(--text3)">作業なし</span>';
+  var html='<div style="overflow-x:auto">'
+    +'<table style="width:100%;border-collapse:collapse;min-width:420px">'
+    +'<thead><tr>'
+    +DOW.map(function(w,i){
+      var c=i===0?'#ff5252':i===6?'#40c4ff':'var(--text2)';
+      return '<th style="padding:6px 2px;font-size:11px;font-weight:700;color:'+c+';text-align:center;border-bottom:1px solid var(--border)">'+w+'</th>';
+    }).join('')
+    +'</tr></thead><tbody>';
 
-    var diffHtml=diff!==null?'<div style="font-size:11px;font-weight:700;color:'+(diff>=0?'var(--g)':'var(--red)')+'">実績'+(diff>=0?'▲':'▼')+Math.abs(diff).toFixed(1)+'kg</div>':'';
-    var actualHtml=totalActual!==null?'<div style="font-size:11px;color:var(--text2)">実績: <strong>'+fmtKg(totalActual)+'kg</strong></div>':'';
+  weeks.forEach(function(wk){
+    html+='<tr>';
+    wk.forEach(function(d,wi){
+      if(!d){ html+='<td style="padding:4px 2px;height:72px"></td>'; return; }
+      var fc=forecast[d]||{total:0,breakdown:{}};
+      var rec=recMap[d];
+      var isToday=(d===td);
+      var dow=new Date(d+'T00:00:00').getDay();
+      var dayNum=parseInt(d.slice(8));
+      var monthNum=parseInt(d.slice(5,7));
+      var isNewMonth=(dayNum===1);
+      var textColor=dow===0?'#ff5252':dow===6?'#40c4ff':'var(--text)';
+      var barPct=fc.total>0?(fc.total/maxKg*100):0;
 
-    return '<div class="day-row'+(isToday?' today':'')+(isPast&&!rec&&!fc.total?' ':'')+'">'
-      +'<div style="width:78px;font-size:12px;flex-shrink:0;display:flex;flex-direction:column;gap:2px">'
-      +(isToday?'<span class="today-badge">TODAY</span>':'')
-      +'<span style="font-weight:'+(isToday?700:400)+';color:'+(isToday?'var(--g)':'var(--text2)')+'">'+fmtDate(d)+'</span></div>'
-      +'<div style="flex:1"><div class="bar-track">'+bars+'</div><div style="display:flex;gap:8px;flex-wrap:wrap">'+bdown+'</div></div>'
-      +'<div style="text-align:right;min-width:88px">'
-      +(fc.total>0?'<div class="kg-num">'+fmtKg(fc.total)+'<span style="font-size:11px;font-weight:400"> kg</span></div>'
-        +'<div class="yen-small">'+(fc.total*PRICE).toLocaleString()+'円</div>':'')
-      +actualHtml+diffHtml
-      +'</div></div>';
-  }).join('');
+      // 収穫量の積み上げバー（小さく）
+      var bars='';
+      if(fc.total>0){
+        Object.keys(fc.breakdown).forEach(function(type){
+          var wt=WORK_TYPES[type]; if(!wt) return;
+          bars+='<div style="height:100%;width:'+(fc.breakdown[type]/maxKg*100)+'%;background:'+wt.color+';float:left"></div>';
+        });
+      }
+
+      html+='<td style="padding:3px 2px;vertical-align:top;height:72px">'
+        +'<div style="border-radius:8px;padding:4px 5px;height:100%;'
+        +(isToday?'background:rgba(0,230,118,.1);border:1.5px solid var(--gdim)':'border:1px solid var(--border)')
+        +'">'
+        // 日付
+        +'<div style="font-size:11px;font-weight:'+(isToday?800:500)+';color:'+(isToday?'var(--g)':textColor)+';">'
+        +(isNewMonth?'<span style="font-size:9px;color:var(--text2)">'+monthNum+'月</span>':'')
+        +(isToday?'<span style="font-size:9px;background:var(--g);color:#000;border-radius:10px;padding:0 4px;font-weight:800">'+dayNum+'</span>':dayNum)
+        +'</div>'
+        // バー
+        +(fc.total>0?
+          '<div style="height:4px;background:var(--bg4);border-radius:2px;overflow:hidden;margin:3px 0;clear:both"><div style="height:100%;overflow:hidden">'+bars+'</div></div>':
+          '<div style="height:4px;margin:3px 0"></div>'
+        )
+        // 収穫量
+        +(fc.total>0?'<div style="font-size:11px;font-weight:700;color:var(--g);line-height:1.2">'+fc.total.toFixed(1)+'<span style="font-size:9px;font-weight:400">kg</span></div>':'')
+        // 売上
+        +(fc.total>0?'<div style="font-size:9px;color:var(--text2)">'+(fc.total*PRICE/10000).toFixed(1)+'万</div>':'')
+        // 実績マーク
+        +(rec?'<div style="font-size:9px;color:var(--orange)">実績✓</div>':'')
+        +'</div></td>';
+    });
+    html+='</tr>';
+  });
+  html+='</tbody></table></div>';
+
+  // 凡例
+  html+='<div style="display:flex;gap:12px;margin-top:10px;flex-wrap:wrap">'
+    +Object.keys(WORK_TYPES).map(function(k){
+      var v=WORK_TYPES[k];
+      return '<div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2)">'
+        +'<span style="width:10px;height:10px;border-radius:2px;background:'+v.color+';display:inline-block"></span>'
+        +v.icon+' '+v.label+'（'+v.delay+'日後 '+v.yield_g+'g）'
+        +'</div>';
+    }).join('')
+    +'</div>';
+
+  document.getElementById('fc-list').innerHTML=html;
 }
+
+// ── 初期在庫 ──────────────────────────────────────────────
 
 // ── 初期在庫 ──────────────────────────────────────────────────
 function buildIniTypeGrid(){
@@ -411,125 +420,8 @@ function clearInitial(){
   },null);
 }
 
-// ── シミュレーター ─────────────────────────────────────────────
-function updateSimMetrics(){
-  var u=parseInt(document.getElementById('sim-u').value)||0;
-  var r=parseInt(document.getElementById('sim-r').value)||0;
-  document.getElementById('sim-btn').disabled=(u+r===0);
-  var m=document.getElementById('sim-metrics');
-  if(!u&&!r){ m.style.display='none'; return; }
-  var bagKg=(u*200+r*400)/1000;
-  var s1Kg=(u+r)*200/1000;
-  var s2Kg=(u+r)*150/1000;
-  m.style.display='grid';
-  m.innerHTML=[
-    {label:'袋出し後収穫/日',kg:bagKg,color:'var(--g)',icon:'🍄'},
-    {label:'1番浸水後/日',kg:s1Kg,color:'var(--blue)',icon:'💧'},
-    {label:'2番浸水後/日',kg:s2Kg,color:'var(--purple)',icon:'💜'},
-  ].map(function(x){
-    return '<div class="metric-card" style="border-top-color:'+x.color+'">'
-      +'<span style="font-size:20px">'+x.icon+'</span>'
-      +'<div class="metric-num" style="color:'+x.color+'">'+x.kg.toFixed(1)+'<span style="font-size:11px;font-weight:400">kg</span></div>'
-      +'<div style="font-size:11px;color:var(--text2)">'+x.label+'</div>'
-      +'<div style="font-size:11px;color:var(--text3)">'+(x.kg*PRICE).toLocaleString()+'円</div>'
-      +'</div>';
-  }).join('');
-}
 
-function runSim(){
-  var u=parseInt(document.getElementById('sim-u').value)||0;
-  var r=parseInt(document.getElementById('sim-r').value)||0;
-  if(!u&&!r) return;
-  var td=today();
 
-  // シミュレーション用エントリ（毎日30日分）
-  var simEntries=[];
-  for(var i=0;i<30;i++){
-    var bd=addDays(td,i);
-    if(u>0) simEntries.push({date:bd,type:'unripe_bag',count:u});
-    if(r>0) simEntries.push({date:bd,type:'ripe_bag',count:r});
-  }
-  // 1番・2番浸水も追加（20日後,32日後）
-  for(var j=0;j<30;j++){
-    var sd=addDays(td,j);
-    simEntries.push({date:addDays(sd,10),type:'soak1',count:(u+r)});  // 袋出し10日後→浸水扱い（20日後に収穫）
-  }
-
-  // 正しい計算: 袋出し→10日後収穫、20日後に1番浸水→12日後(32日後)収穫、さらに12日後(44日後)2番収穫
-  var map={};
-  for(var k=0;k<62;k++) map[addDays(td,k)]={bag:0,soak1:0,soak2:0,soak1Act:0,soak2Act:0};
-
-  for(var di=0;di<30;di++){
-    var date=addDays(td,di);
-    var h1=addDays(date,10); // 袋出し後収穫
-    var h2=addDays(date,32); // 1番浸水後収穫(10+22は違う、10日後に収穫→その後10日休養+浸水→12日後=合計32日?)
-    // 実際: 袋出し→10日後収穫 → 20日後に1番浸水 → +12日後に収穫(=32日後) → さらに+12日後に2番収穫(=44日後)
-    var h2b=addDays(date,32);
-    var h3=addDays(date,44);
-    if(map[h1]) map[h1].bag+=(u*200+r*400)/1000;
-    if(map[h2b]) map[h2b].soak1+=(u+r)*200/1000;
-    if(map[h3]) map[h3].soak2+=(u+r)*150/1000;
-    // 浸水アクション日
-    var s1d=addDays(date,20), s2d=addDays(date,32);
-    if(map[s1d]) map[s1d].soak1Act+=(u+r);
-    if(map[s2d]) map[s2d].soak2Act+=(u+r);
-  }
-
-  // 初期在庫の予測も加算
-  var iniAll=initialStock.concat(iniLocal);
-  var iniForecast=calcForecast(iniAll, td, 62);
-
-  var days=Object.keys(map).sort();
-  var totalKg=days.reduce(function(s,d){
-    var x=map[d];
-    var ini=iniForecast[d]?iniForecast[d].total:0;
-    return s+x.bag+x.soak1+x.soak2+ini;
-  },0);
-  var maxKg=Math.max.apply(null,days.map(function(d){
-    var x=map[d],ini=iniForecast[d]?iniForecast[d].total:0;
-    return x.bag+x.soak1+x.soak2+ini;
-  }).concat([1]));
-
-  document.getElementById('sim-summary').style.display='block';
-  document.getElementById('sim-summary').innerHTML=
-    '<div class="summary" style="margin-bottom:14px">'
-    +'<div class="summary-item"><div class="summary-num">'+totalKg.toFixed(0)+'<span class="summary-unit">kg</span></div><div class="summary-label">60日間 予測合計</div></div>'
-    +'<div class="summary-div"></div>'
-    +'<div class="summary-item"><div class="summary-num yen">'+(totalKg*PRICE/10000).toFixed(1)+'<span class="summary-unit">万円</span></div><div class="summary-label">予測売上合計</div></div>'
-    +'<div class="summary-div"></div>'
-    +'<div class="summary-item"><div class="summary-num" style="color:var(--blue)">'+(totalKg/60).toFixed(1)+'<span class="summary-unit">kg/日</span></div><div class="summary-label">平均収穫量</div></div>'
-    +'</div>'
-    +'<div class="section-title">60日間 日別収穫予測</div>';
-
-  document.getElementById('sim-list').innerHTML=days.map(function(d){
-    var x=map[d], ini=iniForecast[d]?iniForecast[d].total:0;
-    var total=x.bag+x.soak1+x.soak2+ini;
-    var hasAction=x.soak1Act>0||x.soak2Act>0;
-    if(!total&&!hasAction) return '';
-    var isToday=(d===td);
-    var segs=[
-      {v:x.bag,c:'var(--g)'},{v:x.soak1,c:'var(--blue)'},{v:x.soak2,c:'var(--purple)'},{v:ini,c:'#f06292'}
-    ].filter(function(b){ return b.v>0; }).map(function(b){
-      return '<div class="bar-seg" style="width:'+(b.v/maxKg*100)+'%;background:'+b.c+'"></div>';
-    }).join('');
-    var dets=[
-      x.bag>0?'<span style="font-size:11px;color:var(--g)">🍄'+x.bag.toFixed(1)+'kg</span>':'',
-      x.soak1>0?'<span style="font-size:11px;color:var(--blue)">💧'+x.soak1.toFixed(1)+'kg</span>':'',
-      x.soak2>0?'<span style="font-size:11px;color:var(--purple)">💜'+x.soak2.toFixed(1)+'kg</span>':'',
-      ini>0?'<span style="font-size:11px;color:#f06292">🌱'+ini.toFixed(1)+'kg(初期)</span>':'',
-      x.soak1Act>0?'<span style="font-size:11px;color:var(--orange);font-weight:700">▶1番浸水'+x.soak1Act+'個</span>':'',
-      x.soak2Act>0?'<span style="font-size:11px;color:var(--red);font-weight:700">▶2番浸水'+x.soak2Act+'個</span>':'',
-    ].filter(Boolean).join('');
-    return '<div class="day-row'+(isToday?' today':'')+'">'
-      +'<div style="width:78px;font-size:12px;flex-shrink:0;display:flex;flex-direction:column;gap:2px">'
-      +(isToday?'<span class="today-badge">TODAY</span>':'')
-      +'<span style="color:'+(isToday?'var(--g)':'var(--text2)')+';font-weight:'+(isToday?700:400)+'">'+fmtDate(d)+'</span></div>'
-      +'<div style="flex:1"><div class="bar-track">'+segs+'</div><div style="display:flex;gap:6px;flex-wrap:wrap">'+dets+'</div></div>'
-      +(total>0?'<div style="text-align:right;flex-shrink:0"><div class="kg-num">'+total.toFixed(1)+'<span style="font-size:11px;font-weight:400"> kg</span></div>'
-        +'<div class="yen-small">'+(total*PRICE).toLocaleString()+'円</div></div>':'')
-      +'</div>';
-  }).join('');
-}
 </script>
 </body>
 </html>
