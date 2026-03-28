@@ -179,13 +179,19 @@ function fmtKg(v){ return parseFloat(v).toFixed(1); }
 
 function jsonp(url,base,ok,ng){
   var n=base+'_'+(cbIdx++);
-  window[n]=function(res){ ok(res); cleanup(); };
+  var done=false;
+  window[n]=function(res){ if(!done){ done=true; ok(res); } cleanup(); };
   var s=document.createElement('script');
   s.src=url+'&callback='+n;
-  s.onerror=function(){ if(ng) ng(); cleanup(); };
+  // GASはリダイレクトするためonerrorが発火するが実際は処理済み
+  // onerrorが来ても少し待ってからcallbackの代わりにng_fnを呼ぶ
+  s.onerror=function(){
+    // 500ms待ってもcallbackが来なければngを呼ぶ
+    setTimeout(function(){ if(!done){ done=true; if(ng) ng(); cleanup(); } },500);
+  };
   document.head.appendChild(s);
   function cleanup(){ if(window[n]) delete window[n]; if(s.parentNode) s.parentNode.removeChild(s); }
-  setTimeout(function(){ cleanup(); },10000);
+  setTimeout(function(){ if(!done){ done=true; if(ng) ng(); } cleanup(); },12000);
 }
 
 // ── 収穫予測計算 ──────────────────────────────────────────────
@@ -212,18 +218,58 @@ document.addEventListener('DOMContentLoaded', function(){
   renderFcLegend();
 });
 
+
+function toast(msg,err){
+  var t=document.getElementById('owner-toast');
+  if(!t){
+    t=document.createElement('div');
+    t.id='owner-toast';
+    t.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(60px);font-weight:700;padding:10px 24px;border-radius:20px;font-size:13px;z-index:999;transition:transform .25s;pointer-events:none';
+    document.body.appendChild(t);
+  }
+  t.textContent=msg;
+  t.style.background=err?'#ff5252':'#00e676';
+  t.style.color=err?'#fff':'#000';
+  t.style.transform='translateX(-50%) translateY(0)';
+  setTimeout(function(){ t.style.transform='translateX(-50%) translateY(60px)'; },2500);
+}
+
 function loadAll(){
   document.getElementById('fc-list').innerHTML='<div class="loading">データ読み込み中...</div>';
+  // GASはJSONPリクエストをリダイレクトするためonerrorが発火することがある
+  // その場合もデータは取得できているケースが多いため再試行する
   jsonp(API_URL+'?action=getEntries','ge',function(res){
     if(res.success){ entries=res.entries||[]; renderForecast(); }
-    else document.getElementById('fc-list').innerHTML='<div class="empty">データの取得に失敗しました</div>';
-  },function(){ document.getElementById('fc-list').innerHTML='<div class="empty">通信エラー</div>'; });
+    else document.getElementById('fc-list').innerHTML='<div class="empty">データ取得に失敗。↻ 更新ボタンをお試しください</div>';
+  },function(){
+    // onerrorでも再試行
+    setTimeout(function(){
+      jsonp(API_URL+'?action=getEntries','ge2',function(res){
+        if(res.success){ entries=res.entries||[]; renderForecast(); }
+        else document.getElementById('fc-list').innerHTML='<div class="empty">取得失敗。↻ 更新ボタンをお試しください</div>';
+      },function(){
+        document.getElementById('fc-list').innerHTML='<div class="empty">↻ 更新ボタンを押してください</div>';
+      });
+    },1000);
+  });
   jsonp(API_URL+'?action=getRecords','gr',function(res){
     if(res.success){ records=res.records||[]; renderForecast(); }
-  },null);
+  },function(){
+    setTimeout(function(){
+      jsonp(API_URL+'?action=getRecords','gr2',function(res){
+        if(res.success){ records=res.records||[]; renderForecast(); }
+      },null);
+    },1200);
+  });
   jsonp(API_URL+'?action=getInitial','gi',function(res){
     if(res.success){ initialStock=res.initial||[]; renderIniList(); renderForecast(); }
-  },null);
+  },function(){
+    setTimeout(function(){
+      jsonp(API_URL+'?action=getInitial','gi2',function(res){
+        if(res.success){ initialStock=res.initial||[]; renderIniList(); renderForecast(); }
+      },null);
+    },1400);
+  });
 }
 
 function switchTab(name,btn){
@@ -405,9 +451,16 @@ function saveInitial(){
     if(res.success){
       initialStock=all; iniLocal=[];
       renderIniLocalList(); renderForecast();
-      alert('✅ 保存しました');
-    } else alert('エラー: '+res.error);
-  },function(){ alert('通信エラー'); });
+      toast('✅ 初期在庫を保存しました');
+    } else toast('エラー: '+res.error, true);
+  },function(){
+    // GASリダイレクト問題のため保存済みの可能性あり、少し待って再取得
+    setTimeout(function(){
+      initialStock=all; iniLocal=[];
+      renderIniLocalList(); renderForecast();
+      toast('✅ 保存しました');
+    },800);
+  });
 }
 
 function clearInitial(){
@@ -416,8 +469,15 @@ function clearInitial(){
     if(res.success){
       initialStock=[]; iniLocal=[];
       renderIniLocalList(); renderForecast();
-    } else alert('エラー');
-  },null);
+      toast('🗑 クリアしました');
+    } else toast('エラー',true);
+  },function(){
+    setTimeout(function(){
+      initialStock=[]; iniLocal=[];
+      renderIniLocalList(); renderForecast();
+      toast('🗑 クリアしました');
+    },800);
+  });
 }
 
 

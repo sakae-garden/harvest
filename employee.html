@@ -211,7 +211,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter'
         <span style="color:var(--text3)">空き</span>
       </div>
     </div>
-    <div class="room-display-wrap" id="tank-display"></div>
+    <div id="tank-display"></div>
     <div id="tank-empty" class="empty" style="display:none">
       💧 本日のタンクデータがありません<br>
       <small style="color:var(--text3)">作業入力タブからタンク状態を記録してください</small>
@@ -421,10 +421,20 @@ function saveTanks(){
       notes: tankNotes[n]||''
     });
   }
-  jsonp(API_URL+'?action=saveTanks&date='+dt+'&tanks='+encodeURIComponent(JSON.stringify(list)),'svt',function(res){
-    if(res.success){ toast('💧 タンク状態を保存しました'); loadTanks(); }
-    else toast('エラー: '+res.error,true);
-  },function(){ toast('通信エラー',true); });
+  // GASはリダイレクトするためonerrorが発火することがあるが、
+  // データは保存される。onerror時もloadTanksで確認する。
+  jsonp(API_URL+'?action=saveTanks&date='+dt+'&tanks='+encodeURIComponent(JSON.stringify(list)),'svt',
+    function(res){
+      if(res.success){ toast('💧 保存しました'); loadTanks(); }
+      else toast('エラー: '+res.error,true);
+    },
+    function(){
+      // GASリダイレクト問題でonerrorが来ても実際は保存済みのことが多い
+      // 少し待ってからloadTanksで確認
+      setTimeout(function(){ loadTanks(); },800);
+      toast('💧 保存しました（確認中）');
+    }
+  );
 }
 
 function loadTanks(){
@@ -442,44 +452,37 @@ function loadTanks(){
 
 /* ════ タンク表示 ════ */
 function renderTankDisplay(){
-  var td=today();
+  var tankDate=document.getElementById('tank-date').value||today();
   var hasAny=false;
   for(var n=1;n<=8;n++){ if(tankSoak[n]>0){ hasAny=true; break; } }
 
-  document.getElementById('tank-date-disp').textContent=hasAny?fmtDateLong(td)+'浸水分':'';
+  document.getElementById('tank-date-disp').textContent=fmtDateLong(tankDate)+'浸水分';
   var wrap=document.getElementById('tank-display');
-  var emptyEl=document.getElementById('tank-empty');
+  document.getElementById('tank-empty').style.display='none';
 
-  if(!hasAny){
-    wrap.innerHTML=''; emptyEl.style.display='block'; return;
+  var html='<div style="font-size:11px;color:var(--text2);background:rgba(64,196,255,.06);border:1px solid rgba(64,196,255,.15);border-radius:8px;padding:8px 12px;margin-bottom:12px">左の部屋側からタンク1〜タンク8の順</div>'
+    +'<div style="display:flex;flex-direction:column;gap:8px">';
+
+  for(var n=1;n<=8;n++){
+    var s=tankSoak[n]||0;
+    var note=tankNotes[n]||'';
+    var cls=s===1?'on-1':s===2?'on-2':'empty';
+    html+='<div class="tank-vis '+cls+'" style="display:flex;align-items:center;gap:12px;padding:4px 0">'
+      +'<div class="tank-vis-body" style="width:68px;height:60px;flex-shrink:0">'
+      +(s>0?'<div class="tank-water-fill"><div class="tank-wave-anim"></div></div>':'')
+      +'<div class="tank-big-num" style="font-size:24px">'+(s>0?s:'—')+'</div>'
+      +'</div>'
+      +'<div style="flex:1">'
+      +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:2px">'
+      +'<span style="font-size:13px;font-weight:800;color:var(--text2)">タンク'+n+'</span>'
+      +(s>0?'<span class="soak-pill p'+s+'">'+s+'番浸水</span>':'<span style="font-size:11px;color:var(--text3)">空き</span>')
+      +'</div>'
+      +(note?'<div style="font-size:12px;color:var(--text2)">📝 '+note+'</div>':'')
+      +'</div>'
+      +'</div>';
   }
-  emptyEl.style.display='none';
-
-  function renderRoom(title,nos,titleColor){
-    var html='<div class="room-display" style="border-color:'+titleColor+'40">'
-      +'<div class="room-display-title" style="color:'+titleColor+'">'+title+'</div>'
-      +'<div class="tank-display-list">';
-    nos.forEach(function(n){
-      var s=tankSoak[n]||0; var note=tankNotes[n]||'';
-      var cls=s===1?'on-1':s===2?'on-2':'empty';
-      html+='<div class="tank-vis '+cls+'">'
-        +'<div class="tank-vis-body">'
-        +(s>0?'<div class="tank-water-fill"><div class="tank-wave-anim"></div></div>':'')
-        +'<div class="tank-big-num">'+(s>0?s:'—')+'</div>'
-        +'</div>'
-        +'<div class="tank-vis-footer">'
-        +'<span class="tank-vis-no">タンク'+n+'</span>'
-        +(s>0?'<span class="soak-pill p'+s+'">'+s+'番浸水</span>':'')
-        +'</div>'
-        +(note?'<div class="tank-vis-notes">'+note+'</div>':'')
-        +'</div>';
-    });
-    html+='</div></div>';
-    return html;
-  }
-
-  wrap.innerHTML=renderRoom('← 入口から左　タンク1〜4',[1,2,3,4],'#40c4ff')
-    +renderRoom('タンク5〜8　右側 →',[5,6,7,8],'#ce93d8');
+  html+='</div>';
+  wrap.innerHTML=html;
 }
 
 /* ── 収穫記録 ── */
