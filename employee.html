@@ -367,28 +367,24 @@ function addEntry(){
   var dt=document.getElementById('w-date').value;
   var cnt=parseInt(document.getElementById('w-count').value);
   if(!dt||!cnt||cnt<=0){ toast('日付と個数を入力してください',true); return; }
-  var btn=document.getElementById('w-btn'); btn.disabled=true; btn.textContent='送信中...';
-  var aeUrl=API_URL+'?action=addEntry&date='+dt+'&type=bag&count='+cnt+'&staff=';
-  function aeSuccess(res){
-    btn.textContent='＋ 袋出しを記録する';
-    if(res.success){
-      entries.push({id:res.id||('local_'+Date.now()),date:dt,type:'bag',count:cnt,staff:''});
+  var btn=document.getElementById('w-btn');
+
+  // ── 即座にローカル保存→UI更新→トースト（GASを待たない）──
+  var newEntry={id:'local_'+Date.now(),date:dt,type:'bag',count:cnt,staff:''};
+  entries.push(newEntry);
+  lsSave(LS_ENTRIES, entries);
+  document.getElementById('w-count').value='';
+  btn.disabled=true;
+  toast('✅ 記録しました'); renderTodayList();
+
+  // バックグラウンドでGASに同期（成功したらIDを正式なものに更新）
+  var url=API_URL+'?action=addEntry&date='+dt+'&type=bag&count='+cnt+'&staff=';
+  jsonp(url,'ae',function(res){
+    if(res && res.success && res.id){
+      newEntry.id=res.id;
       lsSave(LS_ENTRIES, entries);
-      document.getElementById('w-count').value='';
-      btn.disabled=true;
-      toast('✅ 記録しました'); renderTodayList();
-    } else { btn.disabled=false; toast('エラー: '+res.error,true); }
-  }
-  function aeError(){
-    btn.textContent='＋ 袋出しを記録する'; btn.disabled=false;
-    // GASリダイレクト問題: ローカルに追加してUIに反映、バックグラウンドでGASから再取得
-    entries.push({id:'local_'+Date.now(),date:dt,type:'bag',count:cnt,staff:''});
-    lsSave(LS_ENTRIES, entries);
-    document.getElementById('w-count').value='';
-    toast('✅ 記録しました'); renderTodayList();
-    setTimeout(loadEntries, 2000);
-  }
-  jsonp(aeUrl,'ae',aeSuccess,aeError);
+    }
+  },null);
 }
 function loadEntries(){
   fetchWithRetry(API_URL+'?action=getEntries','ge',function(res){
@@ -465,23 +461,15 @@ function saveTanks(){
       notes: tankNotes[n]||''
     });
   }
-  // GASはリダイレクトするためonerrorが発火することがあるが、
-  // データは保存される。onerror時もloadTanksで確認する。
+  // ── 即座にローカル保存→トースト（GASを待たない）──
+  lsSave(LS_TANKS, {soak:tankSoak, notes:tankNotes, date:dt});
+  toast('💧 保存しました');
+  renderTankDisplay();
+
+  // バックグラウンドでGASに同期
   jsonp(API_URL+'?action=saveTanks&date='+dt+'&tanks='+encodeURIComponent(JSON.stringify(list)),'svt',
-    function(res){
-      if(res.success){
-        lsSave(LS_TANKS, {soak:tankSoak, notes:tankNotes, date:dt});
-        toast('💧 保存しました'); loadTanks(dt);
-      }
-      else toast('エラー: '+res.error,true);
-    },
-    function(){
-      // GASリダイレクト問題でonerrorが来ても実際は保存済みのことが多い
-      // 少し待ってからloadTanksで確認
-      lsSave(LS_TANKS, {soak:tankSoak, notes:tankNotes, date:dt});
-      toast('💧 保存しました');
-      setTimeout(function(){ loadTanks(dt); },2000);
-    }
+    function(res){ if(res && res.success) loadTanks(dt); },
+    null
   );
 }
 
@@ -544,33 +532,26 @@ function addRecord(){
   var dm=parseFloat(document.getElementById('r-dam').value)||0;
   if(!dt){ toast('日付を入力してください',true); return; }
   if(c1+c2+dm===0){ toast('収穫量を入力してください',true); return; }
-  var arUrl=API_URL+'?action=addRecord&date='+dt+'&cut1='+c1+'&cut2plus='+c2+'&damaged='+dm+'&staff=';
-  function arSuccess(res){
-    if(res.success){
-      var newRec={id:res.id||('local_'+Date.now()),date:dt,cut1:c1,cut2plus:c2,damaged:dm,staff:''};
-      records=records.filter(function(r){ return r.date!==dt; });
-      records.push(newRec);
+
+  // ── 即座にローカル保存→UI更新→トースト（GASを待たない）──
+  var newRec={id:'local_'+Date.now(),date:dt,cut1:c1,cut2plus:c2,damaged:dm,staff:''};
+  records=records.filter(function(r){ return r.date!==dt; });
+  records.push(newRec);
+  lsSave(LS_RECORDS, records);
+  renderRecentRecords(); renderHistory();
+  document.getElementById('r-cut1').value='';
+  document.getElementById('r-cut2').value='';
+  document.getElementById('r-dam').value='';
+  toast('✅ 収穫量を記録しました');
+
+  // バックグラウンドでGASに同期
+  var url=API_URL+'?action=addRecord&date='+dt+'&cut1='+c1+'&cut2plus='+c2+'&damaged='+dm+'&staff=';
+  jsonp(url,'ar',function(res){
+    if(res && res.success && res.id){
+      newRec.id=res.id;
       lsSave(LS_RECORDS, records);
-      renderRecentRecords(); renderHistory();
-      document.getElementById('r-cut1').value='';
-      document.getElementById('r-cut2').value='';
-      document.getElementById('r-dam').value='';
-      toast('✅ 収穫量を記録しました');
-    } else toast('エラー: '+res.error,true);
-  }
-  function arError(){
-    var newRec={id:'local_'+Date.now(),date:dt,cut1:c1,cut2plus:c2,damaged:dm,staff:''};
-    records=records.filter(function(r){ return r.date!==dt; });
-    records.push(newRec);
-    lsSave(LS_RECORDS, records);
-    renderRecentRecords(); renderHistory();
-    document.getElementById('r-cut1').value='';
-    document.getElementById('r-cut2').value='';
-    document.getElementById('r-dam').value='';
-    toast('✅ 収穫量を記録しました');
-    setTimeout(loadRecords, 2000);
-  }
-  jsonp(arUrl,'ar',arSuccess,arError);
+    }
+  },null);
 }
 function loadRecords(){
   fetchWithRetry(API_URL+'?action=getRecords','gr',function(res){

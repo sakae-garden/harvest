@@ -383,7 +383,7 @@ var iniLocal=[];
 function addInitial(){
   var date=document.getElementById('ini-date').value;
   var count=parseInt(document.getElementById('ini-count').value);
-  if(!date||!count||count<=0){ alert('日付と個数を入力してください'); return; }
+  if(!date||!count||count<=0){ toast('日付と個数を入力してください',true); return; }
   iniLocal.push({id:'local_'+Date.now(),date:date,type:selIniType,count:count});
   // 個数はクリアしない（連続入力のため）
   renderIniLocalList();
@@ -419,37 +419,25 @@ function removeIni(idx,id){
 
 function saveInitial(){
   var all=initialStock.concat(iniLocal);
-  jsonp(API_URL+'?action=saveInitial&data='+encodeURIComponent(JSON.stringify(all)),'si',function(res){
-    if(res.success){
-      initialStock=all; iniLocal=[];
-      renderIniLocalList(); renderForecast();
-      toast('✅ 初期在庫を保存しました');
-    } else toast('エラー: '+res.error, true);
-  },function(){
-    // GASリダイレクト問題のため保存済みの可能性あり、少し待って再取得
-    setTimeout(function(){
-      initialStock=all; iniLocal=[];
-      renderIniLocalList(); renderForecast();
-      toast('✅ 保存しました');
-    },800);
-  });
+  // ── 即座にローカル更新→トースト（GASを待たない）──
+  initialStock=all; iniLocal=[];
+  renderIniLocalList(); renderForecast();
+  toast('✅ 初期在庫を保存しました');
+  // バックグラウンドでGASに同期
+  jsonp(API_URL+'?action=saveInitial&data='+encodeURIComponent(JSON.stringify(all)),'si',
+    function(res){ if(res && !res.success) toast('GAS同期エラー',true); },
+    null
+  );
 }
 
 function clearInitial(){
   if(!confirm('初期在庫を全て削除しますか？')) return;
-  jsonp(API_URL+'?action=clearInitial','ci',function(res){
-    if(res.success){
-      initialStock=[]; iniLocal=[];
-      renderIniLocalList(); renderForecast();
-      toast('🗑 クリアしました');
-    } else toast('エラー',true);
-  },function(){
-    setTimeout(function(){
-      initialStock=[]; iniLocal=[];
-      renderIniLocalList(); renderForecast();
-      toast('🗑 クリアしました');
-    },800);
-  });
+  // ── 即座にローカルクリア→トースト──
+  initialStock=[]; iniLocal=[];
+  renderIniLocalList(); renderForecast();
+  toast('🗑 クリアしました');
+  // バックグラウンドでGASに同期
+  jsonp(API_URL+'?action=clearInitial','ci',null,null);
 }
 
 
