@@ -2,143 +2,160 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <title>作業記録 | 栄ガーデン</title>
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap');
 :root{
-  --g:#00e676;--gd:#00c853;--gdim:#1b5e20;
-  --bg:#0a0a0a;--bg2:#111;--bg3:#181818;--bg4:#222;
-  --bd:#2a2a2a;--tx:#f0f0f0;--tx2:#888;--tx3:#444;
-  --red:#ff5252;--org:#ff9100;--blue:#40c4ff;--pur:#ce93d8;
+  --bg:#f5f3ee;--card:#fff;--ink:#1c1c1e;--sub:#6c6c70;
+  --border:#e5e1d8;--shadow:0 2px 12px rgba(0,0,0,.08);
+  --green:#2d7a4f;--green-bg:#edf7f1;--green-dk:#1f5c3a;
+  --blue:#1a5fa8;--blue-bg:#e8f0fb;
+  --red:#c0392b;--orange:#e65100;--purple:#7b1fa2;--purple-bg:#f3e5f5;
+  --r:14px;
 }
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Hiragino Kaku Gothic Pro','Meiryo',Arial,sans-serif;background:var(--bg);color:var(--tx);font-size:14px;min-height:100vh}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);min-height:100vh;color:var(--ink);max-width:480px;margin:0 auto}
 /* Header */
-.hdr{background:linear-gradient(90deg,#000,#0a1a0a);border-bottom:1px solid var(--gdim);padding:13px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-.hdr-l{display:flex;align-items:center;gap:10px}
-.hdr-icon{font-size:24px;filter:drop-shadow(0 0 6px var(--g))}
-.hdr-title{font-size:16px;font-weight:900}
-.hdr-sub{font-size:10px;color:var(--g);margin-top:1px;letter-spacing:.5px}
-.hdr-date{font-size:11px;color:var(--tx2)}
-/* Nav */
-.nav{display:flex;background:var(--bg2);border-bottom:1px solid var(--bd);overflow-x:auto;position:sticky;top:56px;z-index:99}
-.nb{flex:1;min-width:60px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 4px;border:none;background:transparent;color:var(--tx3);cursor:pointer;font-size:10px;font-family:inherit;border-bottom:2px solid transparent;white-space:nowrap}
-.nb.on{color:var(--g);border-bottom-color:var(--g);background:rgba(0,230,118,.05)}
+.hdr{background:var(--ink);color:#fff;padding:14px 16px 0;position:sticky;top:0;z-index:100}
+.hdr-top{display:flex;align-items:center;justify-content:space-between;padding-bottom:10px}
+.hdr h1{font-size:17px;font-weight:700;letter-spacing:.04em}
+.hdr-sub{font-size:11px;color:#aaa;margin-top:-6px;padding-bottom:10px;padding-left:2px}
+/* Nav tabs in header */
+.nav-tabs{display:flex;gap:4px;padding:0 0 12px}
+.ntab{flex:1;padding:7px 4px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.55);border:none;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;border-radius:8px;display:flex;flex-direction:column;align-items:center;gap:1px}
+.ntab.on{background:#fff;color:var(--ink)}
+.ntab-icon{font-size:16px}
 /* Main */
-.main{padding:13px;max-width:640px;margin:0 auto}
+.main{padding:14px 14px 32px}
 .tab{display:none}.tab.on{display:block}
+/* Section label */
+.slbl{font-size:10px;font-weight:700;color:var(--sub);letter-spacing:.12em;text-transform:uppercase;margin:16px 0 8px 2px}
+.slbl:first-child{margin-top:4px}
 /* Card */
-.card{background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:15px;margin-bottom:13px}
-.card-t{font-size:12px;font-weight:700;color:var(--g);margin-bottom:13px;letter-spacing:.5px;text-transform:uppercase}
-/* Form */
-.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
-.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px}
-.fl{font-size:11px;color:var(--tx2);margin-bottom:4px;display:block;text-transform:uppercase;letter-spacing:.3px}
-.inp{width:100%;padding:9px 11px;background:var(--bg3);border:1.5px solid var(--bd);border-radius:8px;color:var(--tx);font-size:14px;font-family:inherit;outline:none}
-.inp:focus{border-color:var(--g)}
-.inp[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;margin-bottom:10px}
+.card-hdr{padding:10px 14px;font-size:11px;font-weight:700;letter-spacing:.08em;background:var(--green-bg);color:var(--green)}
+.card-hdr.blue{background:var(--blue-bg);color:var(--blue)}
+.card-hdr.purple{background:var(--purple-bg);color:var(--purple)}
+.card-body{padding:14px}
+/* Form rows */
+.frow{display:flex;align-items:center;padding:10px 14px;border-bottom:1px solid var(--border)}
+.frow:last-child{border-bottom:none}
+.frow-lbl{flex:1;font-size:14px;font-weight:500}
+.frow-inp{display:flex;align-items:center;gap:6px}
+.frow input[type=date],.frow input[type=number]{
+  height:40px;border:1.5px solid var(--border);border-radius:10px;
+  padding:0 10px;font-size:15px;font-weight:600;font-family:inherit;
+  color:var(--ink);background:#fafafa;-moz-appearance:textfield;
+}
+.frow input[type=date]{min-width:140px}
+.frow input[type=number]{width:90px;text-align:center}
+.frow input::-webkit-inner-spin-button{-webkit-appearance:none}
+.frow input:focus{outline:none;border-color:var(--ink);background:#fff}
+.frow-unit{font-size:11px;color:var(--sub)}
+.notes-inp{
+  width:100%;border:1.5px solid var(--border);border-radius:10px;
+  padding:7px 10px;font-size:13px;font-family:inherit;color:var(--ink);
+  background:#fafafa;outline:none;
+}
+.notes-inp:focus{border-color:var(--ink);background:#fff}
+/* Tank rows */
+.tank-info{padding:9px 14px;font-size:12px;color:var(--sub);background:#fafaf8;border-bottom:1px solid var(--border)}
+.tank-row{display:flex;align-items:center;padding:9px 14px;border-bottom:1px solid var(--border);gap:10px}
+.tank-row:last-of-type{border-bottom:none}
+.tank-row.s1{background:rgba(26,95,168,.04)}
+.tank-row.s2{background:rgba(123,31,162,.04)}
+.tank-no{font-size:14px;font-weight:700;min-width:60px}
+.stoggle{display:flex;gap:5px}
+.sbtn{width:34px;height:34px;border:1.5px solid var(--border);border-radius:9px;background:#f5f5f5;color:#999;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.sbtn.on1{border-color:var(--blue);background:var(--blue-bg);color:var(--blue)}
+.sbtn.on2{border-color:var(--purple);background:var(--purple-bg);color:var(--purple)}
+.sbtn.clr{font-size:12px;color:#bbb}
 /* Button */
-.btn{width:100%;padding:11px;background:linear-gradient(135deg,#00c853,#00e676);color:#000;border:none;border-radius:8px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit}
-.btn:disabled{opacity:.4;cursor:default}
-.btn-outline{background:var(--bg3);color:var(--tx2);border:1.5px solid var(--bd);padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
-.btn-del{background:rgba(255,82,82,.1);border:1px solid rgba(255,82,82,.2);border-radius:6px;padding:4px 9px;color:var(--red);cursor:pointer;font-size:11px;font-family:inherit}
-/* Section */
-.sec{font-size:11px;font-weight:700;color:var(--tx2);margin-bottom:7px;letter-spacing:.5px;text-transform:uppercase;display:flex;align-items:center;gap:7px}
-.badge{background:rgba(0,230,118,.15);color:var(--g);border-radius:10px;padding:1px 8px;font-size:11px;font-weight:700}
-/* Rows */
-.erow{display:flex;align-items:center;gap:9px;padding:9px 11px;background:var(--bg2);border-radius:8px;margin-bottom:4px;border:1px solid var(--bd)}
-.rrow{background:var(--bg2);border-radius:8px;padding:9px 11px;margin-bottom:5px;border:1px solid var(--bd)}
-.dhd{font-size:11px;font-weight:700;color:var(--tx2);margin:10px 0 5px;border-bottom:1px solid var(--bd);padding-bottom:3px}
-.empty{text-align:center;padding:24px;color:var(--tx3);font-size:13px}
-/* Harvest input */
-.hlabel{font-size:11px;color:var(--tx2);margin-bottom:4px;display:block;text-transform:uppercase;letter-spacing:.3px}
-/* Toast */
-.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(60px);font-weight:700;padding:10px 22px;border-radius:20px;font-size:13px;z-index:999;transition:transform .2s;pointer-events:none}
-.toast.on{transform:translateX(-50%) translateY(0)}
-/* Loading */
-.loading{text-align:center;padding:20px;color:var(--tx2);font-size:13px}
-/* Tank input */
-.tank-note{font-size:11px;color:var(--tx2);background:rgba(64,196,255,.06);border:1px solid rgba(64,196,255,.15);border-radius:8px;padding:8px 11px;margin-bottom:10px;line-height:1.7}
-.tank-row{display:grid;grid-template-columns:60px 100px 1fr;gap:8px;align-items:center;padding:8px 10px;background:var(--bg3);border-radius:8px;margin-bottom:6px;border:1px solid var(--bd)}
-.tank-row.t1{border-color:rgba(64,196,255,.4)}
-.tank-row.t2{border-color:rgba(206,147,216,.4)}
-.tn-label{font-size:12px;font-weight:700;color:var(--tx2)}
-.sbtn-wrap{display:flex;gap:4px}
-.sbtn{width:32px;height:32px;border:1.5px solid var(--bd);border-radius:7px;background:var(--bg4);color:var(--tx3);font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center}
-.sbtn.on1{border-color:#60a5fa;background:rgba(59,130,246,.18);color:#93c5fd}
-.sbtn.on2{border-color:#a78bfa;background:rgba(139,92,246,.18);color:#c4b5fd}
-.sbtn.clr{font-size:11px;color:var(--tx3)}
-.notes-i{width:100%;padding:7px 9px;background:var(--bg4);border:1.5px solid var(--bd);border-radius:6px;color:var(--tx2);font-size:12px;font-family:inherit;outline:none}
+.submit-btn{width:100%;padding:14px;background:var(--ink);color:#fff;border:none;border-radius:var(--r);font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:.04em;transition:opacity .15s}
+.submit-btn:active{opacity:.8}
+.submit-btn:disabled{opacity:.4;cursor:not-allowed}
+.sub-btn{background:var(--green);color:#fff;border:none;border-radius:10px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap}
+.del-btn{background:none;border:1px solid #ddd;border-radius:8px;padding:4px 10px;color:#aaa;cursor:pointer;font-size:12px;font-family:inherit}
+/* Entry rows */
+.erow{display:flex;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 13px;margin-bottom:7px;box-shadow:var(--shadow);gap:10px}
+.rrow{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 13px;margin-bottom:7px;box-shadow:var(--shadow)}
+.dhd{font-size:10px;font-weight:700;color:var(--sub);letter-spacing:.1em;text-transform:uppercase;margin:14px 0 6px 2px}
 /* Tank display */
-.tank-list{display:flex;flex-direction:column;gap:8px}
-.tv{display:flex;align-items:center;gap:12px;padding:3px 0}
-.tv-body{width:66px;height:60px;border-radius:8px;border:2px solid var(--bg4);position:relative;overflow:hidden;background:var(--bg4);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.tv.v1 .tv-body{border-color:#3b82f6;box-shadow:0 0 8px rgba(59,130,246,.2)}
-.tv.v2 .tv-body{border-color:#8b5cf6;box-shadow:0 0 8px rgba(139,92,246,.2)}
-.tv-water{position:absolute;bottom:0;left:0;right:0}
-.tv.v1 .tv-water{height:65%;background:linear-gradient(180deg,rgba(59,130,246,.25),rgba(29,78,216,.55))}
-.tv.v2 .tv-water{height:65%;background:linear-gradient(180deg,rgba(139,92,246,.25),rgba(91,33,182,.55))}
-.tv-wave{position:absolute;top:0;left:-50%;width:200%;height:7px;border-radius:40%;animation:wave 3s linear infinite}
-.tv.v1 .tv-wave{background:rgba(96,165,250,.4)}
-.tv.v2 .tv-wave{background:rgba(167,139,250,.4)}
-@keyframes wave{from{transform:translateX(0)}to{transform:translateX(50%)}}
-.tv-num{font-size:26px;font-weight:900;z-index:2;text-shadow:0 2px 8px rgba(0,0,0,.7)}
-.tv.v1 .tv-num{color:#93c5fd}
-.tv.v2 .tv-num{color:#c4b5fd}
-.tv.v0 .tv-num{color:var(--tx3);font-size:20px}
-.tv-pill{font-size:9px;font-weight:800;padding:2px 6px;border-radius:8px}
-.tv.v1 .tv-pill{background:rgba(59,130,246,.2);color:#93c5fd}
-.tv.v2 .tv-pill{background:rgba(139,92,246,.2);color:#c4b5fd}
+.tv{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 13px;margin-bottom:7px;box-shadow:var(--shadow)}
+.tv-body{width:60px;height:54px;border-radius:10px;border:2px solid #eee;position:relative;overflow:hidden;background:#f5f5f5;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.tv.v1 .tv-body{border-color:var(--blue);background:var(--blue-bg)}
+.tv.v2 .tv-body{border-color:var(--purple);background:var(--purple-bg)}
+.tv-num{font-size:24px;font-weight:900;z-index:2;color:#ccc}
+.tv.v1 .tv-num{color:var(--blue)}
+.tv.v2 .tv-num{color:var(--purple)}
+.tv-pill{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:8px;margin-bottom:2px}
+.tv.v1 .tv-pill{background:var(--blue-bg);color:var(--blue)}
+.tv.v2 .tv-pill{background:var(--purple-bg);color:var(--purple)}
+/* Toast */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(60px);font-weight:700;padding:10px 22px;border-radius:20px;font-size:13px;z-index:999;transition:transform .2s;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,.2)}
+.toast.on{transform:translateX(-50%) translateY(0)}
+.empty{text-align:center;padding:24px;color:#bbb;font-size:13px}
+.loading{text-align:center;padding:20px;color:var(--sub);font-size:13px}
+/* harvest colors */
+.c-green{color:var(--green)}
+.c-orange{color:var(--orange)}
+.c-red{color:var(--red)}
 </style>
 </head>
 <body>
 
 <header class="hdr">
-  <div class="hdr-l">
-    <span class="hdr-icon">🍄</span>
-    <div>
-      <div class="hdr-title">作業記録</div>
-      <div class="hdr-sub">栄ガーデン · Employee</div>
-    </div>
+  <div class="hdr-top">
+    <h1>🍄 作業記録</h1>
+    <span id="hdate" style="font-size:12px;color:#aaa"></span>
   </div>
-  <div class="hdr-date" id="hdate"></div>
+  <div class="nav-tabs">
+    <button class="ntab on" onclick="go('work',this)"><span class="ntab-icon">✏️</span>作業入力</button>
+    <button class="ntab" onclick="go('tank',this)"><span class="ntab-icon">💧</span>浸水タンク</button>
+    <button class="ntab" onclick="go('harvest',this)"><span class="ntab-icon">📦</span>収穫入力</button>
+    <button class="ntab" onclick="go('history',this)"><span class="ntab-icon">📋</span>履歴</button>
+  </div>
 </header>
-
-<nav class="nav">
-  <button class="nb on" onclick="go('work',this)"><span>✏️</span>作業入力</button>
-  <button class="nb" onclick="go('tank',this)"><span>💧</span>浸水タンク</button>
-  <button class="nb" onclick="go('harvest',this)"><span>📦</span>収穫入力</button>
-  <button class="nb" onclick="go('history',this)"><span>📋</span>履歴</button>
-</nav>
 
 <div class="main">
 
 <!-- ══ 作業入力 ══ -->
 <div id="tab-work" class="tab on">
 
-  <!-- 袋出し -->
+  <div class="slbl">袋出し</div>
   <div class="card">
-    <div class="card-t">🍄 袋出し</div>
-    <div class="row2">
-      <div><label class="fl">作業日</label><input type="date" id="w-date" class="inp"></div>
-      <div><label class="fl">個数</label><input type="number" id="w-count" class="inp" placeholder="例: 100" min="1"></div>
+    <div class="frow">
+      <span class="frow-lbl">作業日</span>
+      <input type="date" id="w-date">
     </div>
-    <button class="btn" id="w-btn" onclick="addEntry()">＋ 袋出しを記録する</button>
+    <div class="frow">
+      <span class="frow-lbl">個数</span>
+      <div class="frow-inp">
+        <input type="number" id="w-count" placeholder="0" min="1">
+        <span class="frow-unit">個</span>
+      </div>
+    </div>
+    <div style="padding:12px 14px">
+      <button class="submit-btn" id="w-btn" onclick="addEntry()">＋ 袋出しを記録する</button>
+    </div>
   </div>
 
-  <!-- 浸水タンク入力 -->
+  <div class="slbl">浸水タンク</div>
   <div class="card">
-    <div class="card-t">💧 浸水タンク</div>
-    <div style="margin-bottom:12px">
-      <label class="fl">浸水日</label>
-      <input type="date" id="tank-date" class="inp">
+    <div class="frow">
+      <span class="frow-lbl">浸水日</span>
+      <input type="date" id="tank-date">
     </div>
-    <div class="tank-note">左の部屋側からタンク1〜タンク8の順（詰めて登録でOK）</div>
+    <div class="tank-info">左の部屋側からタンク1〜タンク8の順（詰めて登録でOK）</div>
     <div id="tank-inputs"></div>
-    <button class="btn" style="margin-top:8px" onclick="saveTanks()">💾 タンク状態を保存</button>
+    <div style="padding:12px 14px">
+      <button class="submit-btn" onclick="saveTanks()">💾 タンク状態を保存</button>
+    </div>
   </div>
 
-  <div class="sec">本日の袋出し <span class="badge" id="today-cnt">0</span></div>
+  <div class="slbl">本日の袋出し記録 <span id="today-cnt" style="font-weight:400;color:var(--sub)">0件</span></div>
   <div id="today-list"></div>
 </div>
 
@@ -146,42 +163,57 @@ body{font-family:'Hiragino Kaku Gothic Pro','Meiryo',Arial,sans-serif;background
 <div id="tab-tank" class="tab">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
     <div>
-      <div style="font-size:18px;font-weight:900;margin-bottom:2px">浸水タンク状態</div>
-      <div id="tank-date-disp" style="font-size:12px;color:var(--g);font-weight:600"></div>
+      <div style="font-size:17px;font-weight:700;margin-bottom:2px">浸水タンク状態</div>
+      <div id="tank-date-disp" style="font-size:12px;color:var(--sub)"></div>
     </div>
-    <button class="btn-outline" onclick="loadTanks()">↻ 更新</button>
+    <button class="sub-btn" onclick="loadTanks()">↻ 更新</button>
   </div>
-  <div style="display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap">
-    <div style="display:flex;align-items:center;gap:5px;font-size:12px"><span style="width:11px;height:11px;border-radius:2px;background:rgba(59,130,246,.45);display:inline-block"></span><span style="color:#93c5fd">1番浸水</span></div>
-    <div style="display:flex;align-items:center;gap:5px;font-size:12px"><span style="width:11px;height:11px;border-radius:2px;background:rgba(139,92,246,.45);display:inline-block"></span><span style="color:#c4b5fd">2番浸水</span></div>
-    <div style="display:flex;align-items:center;gap:5px;font-size:12px"><span style="width:11px;height:11px;border-radius:2px;background:var(--bg4);border:1px solid var(--bd);display:inline-block"></span><span style="color:var(--tx3)">空き</span></div>
-  </div>
-  <div class="tank-note">左の部屋側からタンク1〜タンク8の順</div>
-  <div id="tank-disp" class="tank-list"></div>
-  <div id="tank-disp-empty" class="empty" style="display:none">💧 本日のタンクデータなし</div>
+  <div id="tank-disp"></div>
+  <div id="tank-disp-empty" class="empty" style="display:none">💧 本日のデータがありません</div>
 </div>
 
 <!-- ══ 収穫入力 ══ -->
 <div id="tab-harvest" class="tab">
+  <div class="slbl">収穫量を記録 <span style="font-weight:400;color:var(--orange);text-transform:none;font-size:10px;letter-spacing:0">※翌日朝に登録</span></div>
   <div class="card">
-    <div class="card-t">📦 収穫量を記録<span style="font-size:10px;color:var(--org);font-weight:400;margin-left:8px;text-transform:none">※翌日朝に登録</span></div>
-    <div style="margin-bottom:12px"><label class="fl">収穫日</label><input type="date" id="r-date" class="inp"></div>
-    <div class="row3">
-      <div><label class="hlabel" style="color:var(--g)">1番（kg）</label><input type="number" id="r-cut1" class="inp" placeholder="0.0" step="0.1" min="0" style="border-color:rgba(0,230,118,.3)"></div>
-      <div><label class="hlabel" style="color:var(--org)">2番以降（kg）</label><input type="number" id="r-cut2" class="inp" placeholder="0.0" step="0.1" min="0" style="border-color:rgba(255,145,0,.3)"></div>
-      <div><label class="hlabel" style="color:var(--red)">キズ（kg）</label><input type="number" id="r-dam" class="inp" placeholder="0.0" step="0.1" min="0" style="border-color:rgba(255,82,82,.3)"></div>
+    <div class="frow">
+      <span class="frow-lbl">収穫日</span>
+      <input type="date" id="r-date">
     </div>
-    <button class="btn" onclick="addRecord()">記録する</button>
+    <div class="frow">
+      <span class="frow-lbl" style="color:var(--green)">1番 刈り取り</span>
+      <div class="frow-inp">
+        <input type="number" id="r-cut1" placeholder="0.0" step="0.1" min="0">
+        <span class="frow-unit">kg</span>
+      </div>
+    </div>
+    <div class="frow">
+      <span class="frow-lbl" style="color:var(--orange)">2番以降 刈り取り</span>
+      <div class="frow-inp">
+        <input type="number" id="r-cut2" placeholder="0.0" step="0.1" min="0">
+        <span class="frow-unit">kg</span>
+      </div>
+    </div>
+    <div class="frow">
+      <span class="frow-lbl" style="color:var(--red)">キズ</span>
+      <div class="frow-inp">
+        <input type="number" id="r-dam" placeholder="0.0" step="0.1" min="0">
+        <span class="frow-unit">kg</span>
+      </div>
+    </div>
+    <div style="padding:12px 14px">
+      <button class="submit-btn" onclick="addRecord()">記録する</button>
+    </div>
   </div>
-  <div class="sec">直近の収穫 <span class="badge" id="rec-cnt">0</span></div>
+  <div class="slbl">直近の収穫 <span id="rec-cnt" style="font-weight:400;color:var(--sub)">0件</span></div>
   <div id="rec-list"></div>
 </div>
 
 <!-- ══ 履歴 ══ -->
 <div id="tab-history" class="tab">
-  <div class="sec">作業記録 <span class="badge" id="hist-e-cnt">0</span></div>
+  <div class="slbl">作業記録 <span id="hist-e-cnt" style="font-weight:400;color:var(--sub)">0件</span></div>
   <div id="hist-entries"><div class="loading">読み込み中...</div></div>
-  <div class="sec" style="margin-top:18px">収穫記録 <span class="badge" id="hist-r-cnt">0</span></div>
+  <div class="slbl" style="margin-top:20px">収穫記録 <span id="hist-r-cnt" style="font-weight:400;color:var(--sub)">0件</span></div>
   <div id="hist-records"><div class="loading">読み込み中...</div></div>
 </div>
 
@@ -189,120 +221,112 @@ body{font-family:'Hiragino Kaku Gothic Pro','Meiryo',Arial,sans-serif;background
 <div class="toast" id="toast"></div>
 
 <script>
-var API = 'https://script.google.com/macros/s/AKfycbw8BfOGR-zFremHC58Huz57dFJxmPxeEe5sDotr05sDbZIjD56269S79ikKWKpovdP1/exec';
+var API='https://script.google.com/macros/s/AKfycbw8BfOGR-zFremHC58Huz57dFJxmPxeEe5sDotr05sDbZIjD56269S79ikKWKpovdP1/exec';
 
-var TYPES = {
-  bag:   {label:'袋出し',  delay:10, color:'#00e676', icon:'🍄'},
-  soak1: {label:'1番浸水', delay:12, color:'#40c4ff', icon:'💧', fixed:42},
-  soak2: {label:'2番浸水', delay:12, color:'#ce93d8', icon:'💜', fixed:42},
+var TYPES={
+  bag:  {label:'袋出し', delay:10, color:'#2d7a4f', icon:'🍄'},
+  soak1:{label:'1番浸水',delay:12, color:'#1a5fa8', icon:'💧'},
+  soak2:{label:'2番浸水',delay:12, color:'#7b1fa2', icon:'💜'},
 };
 
-var entries=[], records=[];
-var tankSoak={}, tankNotes={};
-var cbN=0;
+var entries=[],records=[],tankSoak={},tankNotes={},cbN=0;
 
-// ── ユーティリティ ────────────────────────────────────────────
-function td(){ return new Date().toISOString().split('T')[0]; }
-function addDays(s,n){ var d=new Date(s+'T00:00:00'); d.setDate(d.getDate()+n); return d.toISOString().split('T')[0]; }
+function td(){return new Date().toISOString().split('T')[0];}
+function addDays(s,n){var d=new Date(s+'T00:00:00');d.setDate(d.getDate()+n);return d.toISOString().split('T')[0];}
 function fmt(s){
-  if(!s) return '';
+  if(!s)return'';
   var d=new Date(s+'T00:00:00');
-  return (d.getMonth()+1)+'/'+(d.getDate())+'('+'日月火水木金土'[d.getDay()]+')';
+  return (d.getMonth()+1)+'/'+d.getDate()+'('+'日月火水木金土'[d.getDay()]+')';
 }
 function fmtL(s){
-  if(!s) return '';
+  if(!s)return'';
   var d=new Date(s+'T00:00:00');
   return d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日';
 }
 function toast(msg,err){
   var t=document.getElementById('toast');
-  t.textContent=msg; t.style.background=err?'#ff5252':'#00e676'; t.style.color=err?'#fff':'#000';
-  t.classList.add('on'); setTimeout(function(){ t.classList.remove('on'); },2500);
+  t.textContent=msg;t.style.background=err?'#c0392b':'#2d7a4f';t.style.color='#fff';
+  t.classList.add('on');setTimeout(function(){t.classList.remove('on');},2500);
 }
 function jsonp(url,ok,ng){
-  var n='cb'+(cbN++), s=document.createElement('script');
-  var t=setTimeout(function(){ cleanup(); if(ng) ng('timeout'); },15000);
-  function cleanup(){ clearTimeout(t); delete window[n]; if(s.parentNode) s.parentNode.removeChild(s); }
-  window[n]=function(d){ cleanup(); ok(d); };
-  s.onerror=function(){ cleanup(); if(ng) ng('error'); };
+  var n='cb'+(cbN++),s=document.createElement('script');
+  var t=setTimeout(function(){cleanup();if(ng)ng('timeout');},15000);
+  function cleanup(){clearTimeout(t);delete window[n];if(s.parentNode)s.parentNode.removeChild(s);}
+  window[n]=function(d){cleanup();ok(d);};
+  s.onerror=function(){cleanup();if(ng)ng('error');};
   s.src=url+(url.indexOf('?')>-1?'&':'?')+'callback='+n;
   document.body.appendChild(s);
 }
-function api(params, ok, ng){
-  var q=Object.keys(params).map(function(k){ return k+'='+encodeURIComponent(params[k]); }).join('&');
-  jsonp(API+'?'+q, ok, ng);
+function api(p,ok,ng){
+  var q=Object.keys(p).map(function(k){return k+'='+encodeURIComponent(p[k]);}).join('&');
+  jsonp(API+'?'+q,ok,ng);
 }
 
-// ── タブ切替 ──────────────────────────────────────────────────
 function go(name,btn){
-  document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('on'); });
-  document.querySelectorAll('.nb').forEach(function(b){ b.classList.remove('on'); });
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');});
+  document.querySelectorAll('.ntab').forEach(function(b){b.classList.remove('on');});
   document.getElementById('tab-'+name).classList.add('on');
   btn.classList.add('on');
-  if(name==='history'){ renderHistoryEntries(); renderHistoryRecords(); }
-  if(name==='tank'){ renderTankDisp(); }
+  if(name==='history'){renderHistE();renderHistR();}
+  if(name==='tank'){renderTankDisp();}
 }
 
-// ── 初期化 ────────────────────────────────────────────────────
-window.addEventListener('load', function(){
+window.addEventListener('load',function(){
   var now=td();
   document.getElementById('hdate').textContent=fmt(now);
   document.getElementById('w-date').value=now;
   document.getElementById('tank-date').value=now;
   document.getElementById('r-date').value=now;
   buildTankInputs();
-  loadEntries();
-  loadRecords();
-  loadTanks();
+  loadEntries();loadRecords();loadTanks();
 });
 
 // ── 袋出し ────────────────────────────────────────────────────
 function addEntry(){
   var date=document.getElementById('w-date').value;
   var cnt=parseInt(document.getElementById('w-count').value);
-  if(!date||!cnt||cnt<=0){ toast('日付と個数を入力してください',true); return; }
+  if(!date||!cnt||cnt<=0){toast('日付と個数を入力してください',true);return;}
   var btn=document.getElementById('w-btn');
-  btn.disabled=true; btn.textContent='送信中...';
+  btn.disabled=true;btn.textContent='送信中...';
   api({action:'addEntry',date:date,type:'bag',count:cnt},
     function(res){
-      btn.disabled=false; btn.textContent='＋ 袋出しを記録する';
+      btn.disabled=false;btn.textContent='＋ 袋出しを記録する';
       if(res.success){
         entries.push({id:res.id,date:date,type:'bag',count:cnt});
         document.getElementById('w-count').value='';
-        toast('✅ 記録しました'); renderToday();
-      } else { toast('エラー: '+res.error,true); }
+        toast('✅ 記録しました');renderToday();
+      }else toast('エラー: '+res.error,true);
     },
-    function(){ btn.disabled=false; btn.textContent='＋ 袋出しを記録する'; toast('通信エラー。再度お試しください',true); }
+    function(){btn.disabled=false;btn.textContent='＋ 袋出しを記録する';toast('通信エラー。再度お試しください',true);}
   );
 }
-
 function loadEntries(){
   api({action:'getEntries'},function(res){
-    if(res.success){ entries=res.entries||[]; renderToday(); }
+    if(res.success){entries=res.entries||[];renderToday();}
   },null);
 }
-
 function renderToday(){
   var now=td();
-  var list=entries.filter(function(e){ return e.date===now; });
-  document.getElementById('today-cnt').textContent=list.length;
+  var list=entries.filter(function(e){return e.date===now;});
+  document.getElementById('today-cnt').textContent=list.length+'件';
   var el=document.getElementById('today-list');
-  if(!list.length){ el.innerHTML='<div class="empty">本日の記録なし</div>'; return; }
+  if(!list.length){el.innerHTML='<div class="empty">本日の記録なし</div>';return;}
   el.innerHTML=list.map(function(e){
     var t=TYPES[e.type]||TYPES.bag;
-    return '<div class="erow" style="border-left:3px solid '+t.color+'">'
-      +'<span style="font-size:19px">'+t.icon+'</span>'
-      +'<div style="flex:1"><div style="font-weight:700">'+t.label+' <strong>'+e.count.toLocaleString()+'個</strong></div>'
-      +'<div style="font-size:11px;color:var(--tx2);margin-top:1px">'+fmt(e.date)+' 作業</div></div>'
-      +'<button class="btn-del" onclick="delEntry(\''+e.id+'\')">削除</button>'
+    return '<div class="erow" style="border-left:4px solid '+t.color+'">'
+      +'<span style="font-size:20px">'+t.icon+'</span>'
+      +'<div style="flex:1">'
+      +'<div style="font-size:15px;font-weight:700">'+t.label+' '+e.count.toLocaleString()+'個</div>'
+      +'<div style="font-size:11px;color:var(--sub);margin-top:1px">'+fmt(e.date)+'</div>'
+      +'</div>'
+      +'<button class="del-btn" onclick="delEntry(\''+e.id+'\')">削除</button>'
       +'</div>';
   }).join('');
 }
-
 function delEntry(id){
-  if(!confirm('削除しますか？')) return;
+  if(!confirm('削除しますか？'))return;
   api({action:'deleteEntry',id:id},function(res){
-    if(res.success){ entries=entries.filter(function(e){ return e.id!==id; }); renderToday(); toast('削除しました'); }
+    if(res.success){entries=entries.filter(function(e){return e.id!==id;});renderToday();toast('削除しました');}
     else toast('エラー',true);
   },null);
 }
@@ -312,90 +336,75 @@ function buildTankInputs(){
   var html='';
   for(var n=1;n<=8;n++){
     var s=tankSoak[n]||0;
-    var rc=s===1?'t1':s===2?'t2':'';
+    var rc=s===1?'s1':s===2?'s2':'';
     html+='<div class="tank-row '+rc+'" id="trow'+n+'">'
-      +'<span class="tn-label">タンク'+n+'</span>'
-      +'<div class="sbtn-wrap">'
+      +'<span class="tank-no">タンク'+n+'</span>'
+      +'<div class="stoggle">'
       +'<button class="sbtn'+(s===1?' on1':'')+'" onclick="setSoak('+n+',1)">1</button>'
       +'<button class="sbtn'+(s===2?' on2':'')+'" onclick="setSoak('+n+',2)">2</button>'
       +'<button class="sbtn clr" onclick="setSoak('+n+',0)">－</button>'
       +'</div>'
-      +'<input class="notes-i" id="tn'+n+'" placeholder="備考" value="'+(tankNotes[n]||'')+'" oninput="tankNotes['+n+']=this.value">'
+      +'<input class="notes-inp" id="tn'+n+'" placeholder="備考" value="'+(tankNotes[n]||'')+'" oninput="tankNotes['+n+']=this.value" style="flex:1;margin-left:4px">'
       +'</div>';
   }
   document.getElementById('tank-inputs').innerHTML=html;
 }
-
 function setSoak(n,v){
   tankSoak[n]=v;
-  var row=document.getElementById('trow'+n);
-  if(!row) return;
-  row.className='tank-row'+(v===1?' t1':v===2?' t2':'');
-  var btns=row.querySelectorAll('.sbtn');
-  btns[0].className='sbtn'+(v===1?' on1':'');
-  btns[1].className='sbtn'+(v===2?' on2':'');
-  btns[2].className='sbtn clr';
+  var row=document.getElementById('trow'+n);if(!row)return;
+  row.className='tank-row'+(v===1?' s1':v===2?' s2':'');
+  var bs=row.querySelectorAll('.sbtn');
+  bs[0].className='sbtn'+(v===1?' on1':'');
+  bs[1].className='sbtn'+(v===2?' on2':'');
+  bs[2].className='sbtn clr';
 }
-
 function saveTanks(){
   var date=document.getElementById('tank-date').value;
-  if(!date){ toast('浸水日を入力してください',true); return; }
+  if(!date){toast('浸水日を入力してください',true);return;}
   var list=[];
   for(var n=1;n<=8;n++){
     var ni=document.getElementById('tn'+n);
     list.push({tank_no:n,soak_num:tankSoak[n]||0,notes:ni?ni.value:''});
   }
-  var btn=document.querySelector('#tab-work .btn:last-of-type');
   api({action:'saveTanks',date:date,tanks:JSON.stringify(list)},
     function(res){
-      if(res.success){ toast('💧 保存しました'); loadTanks(); }
+      if(res.success){toast('💧 保存しました');loadTanks();}
       else toast('エラー: '+res.error,true);
     },
-    function(){ toast('通信エラー。再度お試しください',true); }
+    function(){toast('通信エラー。再度お試しください',true);}
   );
 }
-
 function loadTanks(dateStr){
-  var params={action:'getTanks'};
-  if(dateStr) params.date=dateStr;
-  api(params,function(res){
-    if(!res.success) return;
-    tankSoak={}; tankNotes={};
-    (res.tanks||[]).forEach(function(t){
-      tankSoak[t.tank_no]=t.soak_num||0;
-      tankNotes[t.tank_no]=t.notes||'';
-    });
+  var p={action:'getTanks'};if(dateStr)p.date=dateStr;
+  api(p,function(res){
+    if(!res.success)return;
+    tankSoak={};tankNotes={};
+    (res.tanks||[]).forEach(function(t){tankSoak[t.tank_no]=t.soak_num||0;tankNotes[t.tank_no]=t.notes||'';});
     var d=res.date||td();
     document.getElementById('tank-date').value=d;
-    buildTankInputs();
-    renderTankDisp();
+    buildTankInputs();renderTankDisp();
   },null);
 }
-
 function renderTankDisp(){
   var hasAny=false;
-  for(var n=1;n<=8;n++){ if((tankSoak[n]||0)>0){ hasAny=true; break; } }
+  for(var n=1;n<=8;n++){if((tankSoak[n]||0)>0){hasAny=true;break;}}
   var td2=document.getElementById('tank-date').value||td();
-  document.getElementById('tank-date-disp').textContent=hasAny?fmtL(td2)+'浸水分':'';
+  document.getElementById('tank-date-disp').textContent=fmtL(td2)+'浸水分';
   document.getElementById('tank-disp-empty').style.display=hasAny?'none':'block';
-  if(!hasAny){ document.getElementById('tank-disp').innerHTML=''; return; }
+  if(!hasAny){document.getElementById('tank-disp').innerHTML='';return;}
   var html='';
   for(var n=1;n<=8;n++){
-    var s=tankSoak[n]||0, note=tankNotes[n]||'';
+    var s=tankSoak[n]||0,note=tankNotes[n]||'';
     var vc=s===1?'v1':s===2?'v2':'v0';
     html+='<div class="tv '+vc+'">'
-      +'<div class="tv-body">'
-      +(s>0?'<div class="tv-water"><div class="tv-wave"></div></div>':'')
-      +'<div class="tv-num">'+(s>0?s:'—')+'</div>'
-      +'</div>'
+      +'<div class="tv-body"><div class="tv-num">'+(s>0?s:'—')+'</div></div>'
       +'<div style="flex:1">'
-      +'<div style="display:flex;align-items:center;gap:7px;margin-bottom:2px">'
-      +'<span style="font-size:13px;font-weight:800;color:var(--tx2)">タンク'+n+'</span>'
-      +(s>0?'<span class="tv-pill">'+s+'番浸水</span>':'<span style="font-size:11px;color:var(--tx3)">空き</span>')
+      +'<div style="display:flex;align-items:center;gap:7px;margin-bottom:3px">'
+      +'<span style="font-size:14px;font-weight:700">タンク'+n+'</span>'
+      +(s>0?'<span class="tv-pill">'+s+'番浸水</span>':'<span style="font-size:11px;color:#bbb">空き</span>')
       +'</div>'
-      +(note?'<div style="font-size:12px;color:var(--tx2)">📝 '+note+'</div>':'')
-      +'</div>'
-      +'</div>';
+      +(note?'<div style="font-size:12px;color:var(--sub)">📝 '+note+'</div>':'')
+      +'</div></div>';
   }
   document.getElementById('tank-disp').innerHTML=html;
 }
@@ -406,8 +415,8 @@ function addRecord(){
   var c1=parseFloat(document.getElementById('r-cut1').value)||0;
   var c2=parseFloat(document.getElementById('r-cut2').value)||0;
   var dm=parseFloat(document.getElementById('r-dam').value)||0;
-  if(!date){ toast('日付を入力してください',true); return; }
-  if(c1+c2+dm===0){ toast('収穫量を入力してください',true); return; }
+  if(!date){toast('日付を入力してください',true);return;}
+  if(c1+c2+dm===0){toast('収穫量を入力してください',true);return;}
   api({action:'addRecord',date:date,cut1:c1,cut2plus:c2,damaged:dm},
     function(res){
       if(res.success){
@@ -416,71 +425,68 @@ function addRecord(){
         document.getElementById('r-cut2').value='';
         document.getElementById('r-dam').value='';
         toast('✅ 収穫量を記録しました');
-      } else toast('エラー: '+res.error,true);
+      }else toast('エラー: '+res.error,true);
     },
-    function(){ toast('通信エラー。再度お試しください',true); }
+    function(){toast('通信エラー。再度お試しください',true);}
   );
 }
-
 function loadRecords(){
   api({action:'getRecords'},function(res){
-    if(res.success){ records=res.records||[]; renderRecent(); }
+    if(res.success){records=res.records||[];renderRecent();}
   },null);
 }
-
 function renderRecent(){
-  var sorted=records.slice().sort(function(a,b){ return b.date.localeCompare(a.date); }).slice(0,7);
-  document.getElementById('rec-cnt').textContent=records.length;
+  var sorted=records.slice().sort(function(a,b){return b.date.localeCompare(a.date);}).slice(0,7);
+  document.getElementById('rec-cnt').textContent=records.length+'件';
   var el=document.getElementById('rec-list');
-  if(!sorted.length){ el.innerHTML='<div class="empty">収穫記録なし</div>'; return; }
+  if(!sorted.length){el.innerHTML='<div class="empty">収穫記録なし</div>';return;}
   el.innerHTML=sorted.map(function(r){
     var total=r.cut1+r.cut2plus+r.damaged;
     return '<div class="rrow">'
-      +'<div style="font-weight:700;margin-bottom:4px">'+fmt(r.date)+'</div>'
-      +'<div style="display:flex;gap:11px;font-size:13px;flex-wrap:wrap">'
-      +'<span style="color:var(--g)">1番: '+r.cut1.toFixed(1)+'kg</span>'
-      +'<span style="color:var(--org)">2番以降: '+r.cut2plus.toFixed(1)+'kg</span>'
-      +'<span style="color:var(--red)">キズ: '+r.damaged.toFixed(1)+'kg</span></div>'
-      +'<div style="font-size:11px;color:var(--tx2);margin-top:3px">合計: <strong>'+total.toFixed(1)+'kg</strong></div>'
+      +'<div style="font-weight:700;margin-bottom:5px">'+fmt(r.date)+'</div>'
+      +'<div style="display:flex;gap:12px;font-size:13px;flex-wrap:wrap">'
+      +'<span class="c-green">1番: '+r.cut1.toFixed(1)+'kg</span>'
+      +'<span class="c-orange">2番以降: '+r.cut2plus.toFixed(1)+'kg</span>'
+      +'<span class="c-red">キズ: '+r.damaged.toFixed(1)+'kg</span></div>'
+      +'<div style="font-size:11px;color:var(--sub);margin-top:3px">合計: <strong>'+total.toFixed(1)+'kg</strong></div>'
       +'</div>';
   }).join('');
 }
 
 // ── 履歴 ──────────────────────────────────────────────────────
-function renderHistoryEntries(){
-  var sorted=entries.slice().sort(function(a,b){ return b.date.localeCompare(a.date); });
-  document.getElementById('hist-e-cnt').textContent=sorted.length;
+function renderHistE(){
+  var sorted=entries.slice().sort(function(a,b){return b.date.localeCompare(a.date);});
+  document.getElementById('hist-e-cnt').textContent=sorted.length+'件';
   var el=document.getElementById('hist-entries');
-  if(!sorted.length){ el.innerHTML='<div class="empty">記録なし</div>'; return; }
+  if(!sorted.length){el.innerHTML='<div class="empty">記録なし</div>';return;}
   var byDate={};
-  sorted.forEach(function(e){ (byDate[e.date]=byDate[e.date]||[]).push(e); });
-  el.innerHTML=Object.keys(byDate).sort(function(a,b){ return b.localeCompare(a); }).map(function(d){
+  sorted.forEach(function(e){(byDate[e.date]=byDate[e.date]||[]).push(e);});
+  el.innerHTML=Object.keys(byDate).sort(function(a,b){return b.localeCompare(a);}).map(function(d){
     return '<div class="dhd">'+fmt(d)+'</div>'
       +byDate[d].map(function(e){
         var t=TYPES[e.type]||TYPES.bag;
-        return '<div class="erow" style="border-left:3px solid '+t.color+'">'
-          +'<span style="font-size:18px">'+t.icon+'</span>'
-          +'<div style="flex:1;font-size:12px;font-weight:700">'+t.label+' '+e.count.toLocaleString()+'個</div>'
-          +'<button class="btn-del" onclick="delEntry(\''+e.id+'\')">削除</button>'
+        return '<div class="erow" style="border-left:4px solid '+t.color+'">'
+          +'<span style="font-size:19px">'+t.icon+'</span>'
+          +'<div style="flex:1;font-size:14px;font-weight:700">'+t.label+' '+e.count.toLocaleString()+'個</div>'
+          +'<button class="del-btn" onclick="delEntry(\''+e.id+'\')">削除</button>'
           +'</div>';
       }).join('');
   }).join('');
 }
-
-function renderHistoryRecords(){
-  var sorted=records.slice().sort(function(a,b){ return b.date.localeCompare(a.date); });
-  document.getElementById('hist-r-cnt').textContent=sorted.length;
+function renderHistR(){
+  var sorted=records.slice().sort(function(a,b){return b.date.localeCompare(a.date);});
+  document.getElementById('hist-r-cnt').textContent=sorted.length+'件';
   var el=document.getElementById('hist-records');
-  if(!sorted.length){ el.innerHTML='<div class="empty">記録なし</div>'; return; }
+  if(!sorted.length){el.innerHTML='<div class="empty">記録なし</div>';return;}
   el.innerHTML=sorted.map(function(r){
     var total=r.cut1+r.cut2plus+r.damaged;
     return '<div class="rrow">'
       +'<div style="font-weight:700;margin-bottom:4px">'+fmt(r.date)+'</div>'
-      +'<div style="display:flex;gap:11px;font-size:12px;flex-wrap:wrap">'
-      +'<span style="color:var(--g)">1番: '+r.cut1.toFixed(1)+'kg</span>'
-      +'<span style="color:var(--org)">2番以降: '+r.cut2plus.toFixed(1)+'kg</span>'
-      +'<span style="color:var(--red)">キズ: '+r.damaged.toFixed(1)+'kg</span>'
-      +'<span style="color:var(--tx2)">合計: <strong>'+total.toFixed(1)+'kg</strong></span></div>'
+      +'<div style="display:flex;gap:11px;font-size:13px;flex-wrap:wrap">'
+      +'<span class="c-green">1番: '+r.cut1.toFixed(1)+'kg</span>'
+      +'<span class="c-orange">2番以降: '+r.cut2plus.toFixed(1)+'kg</span>'
+      +'<span class="c-red">キズ: '+r.damaged.toFixed(1)+'kg</span>'
+      +'<span style="color:var(--sub)">合計: <strong>'+total.toFixed(1)+'kg</strong></span></div>'
       +'</div>';
   }).join('');
 }

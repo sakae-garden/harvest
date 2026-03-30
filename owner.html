@@ -2,88 +2,98 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <title>収穫予測 | 栄ガーデン</title>
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap');
 :root{
-  --g:#00e676;--gd:#00c853;--gdim:#1b5e20;
-  --bg:#0a0a0a;--bg2:#111;--bg3:#181818;--bg4:#222;
-  --bd:#2a2a2a;--tx:#f0f0f0;--tx2:#888;--tx3:#444;
-  --red:#ff5252;--org:#ff9100;--blue:#40c4ff;--pur:#ce93d8;
+  --bg:#f5f3ee;--card:#fff;--ink:#1c1c1e;--sub:#6c6c70;
+  --border:#e5e1d8;--shadow:0 2px 12px rgba(0,0,0,.08);
+  --green:#2d7a4f;--green-bg:#edf7f1;--green-dk:#1f5c3a;
+  --blue:#1a5fa8;--blue-bg:#e8f0fb;
+  --red:#c0392b;--orange:#e65100;--purple:#7b1fa2;--purple-bg:#f3e5f5;
+  --r:14px;
 }
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Hiragino Kaku Gothic Pro','Meiryo',Arial,sans-serif;background:var(--bg);color:var(--tx);font-size:14px;min-height:100vh}
-.hdr{background:linear-gradient(90deg,#000,#050d05);border-bottom:1px solid var(--gdim);padding:13px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-.hdr-l{display:flex;align-items:center;gap:10px}
-.hdr-icon{font-size:24px;filter:drop-shadow(0 0 8px var(--g))}
-.hdr-title{font-size:16px;font-weight:900}
-.hdr-sub{font-size:10px;color:var(--g);margin-top:1px;letter-spacing:.5px}
-.reload{background:rgba(0,230,118,.1);border:1px solid var(--gdim);border-radius:8px;padding:6px 12px;color:var(--g);cursor:pointer;font-size:12px;font-weight:600;font-family:inherit}
-.nav{display:flex;background:var(--bg2);border-bottom:1px solid var(--bd);position:sticky;top:56px;z-index:99}
-.nb{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 4px;border:none;background:transparent;color:var(--tx3);cursor:pointer;font-size:10px;font-family:inherit;border-bottom:2px solid transparent}
-.nb.on{color:var(--g);border-bottom-color:var(--g);background:rgba(0,230,118,.05)}
-.main{padding:13px;max-width:860px;margin:0 auto}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);min-height:100vh;color:var(--ink);max-width:600px;margin:0 auto}
+.hdr{background:var(--ink);color:#fff;padding:14px 16px 0;position:sticky;top:0;z-index:100}
+.hdr-top{display:flex;align-items:center;justify-content:space-between;padding-bottom:10px}
+.hdr h1{font-size:17px;font-weight:700;letter-spacing:.04em}
+.reload{background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:8px;padding:6px 13px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.nav-tabs{display:flex;gap:4px;padding:0 0 12px}
+.ntab{flex:1;padding:7px 4px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.55);border:none;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;border-radius:8px;display:flex;flex-direction:column;align-items:center;gap:1px}
+.ntab.on{background:#fff;color:var(--ink)}
+.ntab-icon{font-size:16px}
+.main{padding:14px 14px 32px}
 .tab{display:none}.tab.on{display:block}
-.card{background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:15px;margin-bottom:13px}
-.card-t{font-size:12px;font-weight:700;color:var(--g);margin-bottom:13px;letter-spacing:.5px;text-transform:uppercase}
-.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
-.fl{font-size:11px;color:var(--tx2);margin-bottom:4px;display:block;text-transform:uppercase;letter-spacing:.3px}
-.inp{width:100%;padding:9px 11px;background:var(--bg3);border:1.5px solid var(--bd);border-radius:8px;color:var(--tx);font-size:14px;font-family:inherit;outline:none}
-.inp:focus{border-color:var(--g)}
-.inp[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
-.btn{width:100%;padding:11px;background:linear-gradient(135deg,#00c853,#00e676);color:#000;border:none;border-radius:8px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit}
-.btn-sm{width:auto;padding:8px 16px;font-size:12px}
-.btn-outline{background:var(--bg3);color:var(--tx2);border:1.5px solid var(--bd);padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
-.btn-del{background:rgba(255,82,82,.1);border:1px solid rgba(255,82,82,.2);border-radius:6px;padding:4px 9px;color:var(--red);cursor:pointer;font-size:11px;font-family:inherit}
-.sec{font-size:11px;font-weight:700;color:var(--tx2);margin-bottom:7px;letter-spacing:.5px;text-transform:uppercase;display:flex;align-items:center;gap:7px}
-.badge{background:rgba(0,230,118,.15);color:var(--g);border-radius:10px;padding:1px 8px;font-size:11px;font-weight:700}
-.empty{text-align:center;padding:24px;color:var(--tx3);font-size:13px}
-.loading{text-align:center;padding:20px;color:var(--tx2);font-size:13px}
-.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(60px);font-weight:700;padding:10px 22px;border-radius:20px;font-size:13px;z-index:999;transition:transform .2s;pointer-events:none}
-.toast.on{transform:translateX(-50%) translateY(0)}
-/* Init stock */
-.init-note{font-size:11px;color:var(--org);background:rgba(255,145,0,.06);border:1px solid rgba(255,145,0,.2);border-radius:8px;padding:9px 11px;margin-bottom:13px;line-height:1.7}
-.type-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:13px}
-.tbtn{display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:10px 11px;border-radius:8px;cursor:pointer;border:1.5px solid var(--bd);background:var(--bg3);color:var(--tx2);font-family:inherit}
-.tbtn.sel-bag  {border-color:#00e676;background:rgba(0,230,118,.08);color:#fff}
-.tbtn.sel-soak1{border-color:#40c4ff;background:rgba(64,196,255,.08);color:#fff}
-.tbtn.sel-soak2{border-color:#ce93d8;background:rgba(206,147,216,.08);color:#fff}
-.irow{display:flex;align-items:center;gap:9px;padding:8px 10px;background:var(--bg3);border-radius:8px;margin-bottom:4px;border:1px solid var(--bd)}
-.tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700}
+.slbl{font-size:10px;font-weight:700;color:var(--sub);letter-spacing:.12em;text-transform:uppercase;margin:16px 0 8px 2px}
+.slbl:first-child{margin-top:4px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;margin-bottom:10px}
+.card-hdr{padding:10px 14px;font-size:11px;font-weight:700;letter-spacing:.08em;background:var(--green-bg);color:var(--green)}
+.frow{display:flex;align-items:center;padding:10px 14px;border-bottom:1px solid var(--border)}
+.frow:last-child{border-bottom:none}
+.frow-lbl{flex:1;font-size:14px;font-weight:500}
+.frow-inp{display:flex;align-items:center;gap:6px}
+.frow input[type=date],.frow input[type=number]{
+  height:40px;border:1.5px solid var(--border);border-radius:10px;
+  padding:0 10px;font-size:15px;font-weight:600;font-family:inherit;
+  color:var(--ink);background:#fafafa;-moz-appearance:textfield;
+}
+.frow input[type=date]{min-width:140px}
+.frow input[type=number]{width:90px;text-align:center}
+.frow input::-webkit-inner-spin-button{-webkit-appearance:none}
+.frow input:focus{outline:none;border-color:var(--ink);background:#fff}
+.frow-unit{font-size:11px;color:var(--sub)}
+.submit-btn{width:100%;padding:14px;background:var(--ink);color:#fff;border:none;border-radius:var(--r);font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:.04em;transition:opacity .15s}
+.submit-btn:active{opacity:.8}
+.sub-btn{background:var(--green);color:#fff;border:none;border-radius:10px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap}
+.del-btn{background:none;border:1px solid #ddd;border-radius:8px;padding:4px 10px;color:#aaa;cursor:pointer;font-size:12px;font-family:inherit}
+.irow{display:flex;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 13px;margin-bottom:7px;box-shadow:var(--shadow);gap:9px}
+.tag{display:inline-block;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:700}
+/* Type buttons */
+.type-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;padding:12px 14px 0}
+.tbtn{display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:10px 11px;border-radius:10px;cursor:pointer;border:1.5px solid var(--border);background:#fafafa;color:var(--sub);font-family:inherit;transition:all .15s}
+.tbtn.sel-bag  {border-color:var(--green);background:var(--green-bg);color:var(--ink)}
+.tbtn.sel-soak1{border-color:var(--blue);background:var(--blue-bg);color:var(--ink)}
+.tbtn.sel-soak2{border-color:var(--purple);background:var(--purple-bg);color:var(--ink)}
 /* Calendar */
 .cal-wrap{overflow-x:auto}
-.cal{width:100%;border-collapse:collapse;min-width:400px}
-.cal th{padding:5px 2px;font-size:11px;font-weight:700;text-align:center;border-bottom:1px solid var(--bd)}
+.cal{width:100%;border-collapse:collapse;min-width:360px}
+.cal th{padding:6px 2px;font-size:11px;font-weight:700;text-align:center;border-bottom:2px solid var(--border);color:var(--sub)}
+.cal th:first-child{color:var(--red)}
+.cal th:last-child{color:var(--blue)}
 .cal td{padding:3px 2px;vertical-align:top}
-.day-cell{border-radius:8px;padding:4px 5px;min-height:68px;border:1px solid var(--bd);background:var(--bg2)}
-.day-cell.today{background:rgba(0,230,118,.08);border-color:var(--gdim)}
-.day-cell.empty-day{border-color:transparent;background:transparent;min-height:0}
-.day-num{font-size:11px;font-weight:600;color:var(--tx2);line-height:1;margin-bottom:3px}
-.day-num.today{background:var(--g);color:#000;border-radius:10px;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:10px}
-.day-num.sun{color:var(--red)}
-.day-num.sat{color:var(--blue)}
-.day-kg{font-size:13px;font-weight:800;color:var(--g);line-height:1.2}
-.day-yen{font-size:11px;font-weight:700;color:var(--org)}
-.day-rec{font-size:9px;color:var(--org);margin-top:1px}
+.dcell{border-radius:10px;padding:5px 6px;min-height:72px;border:1px solid var(--border);background:var(--card);box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.dcell.today{background:var(--green-bg);border-color:var(--green);border-width:1.5px}
+.dcell.noday{border-color:transparent;background:transparent;box-shadow:none;min-height:0}
+.dnum{font-size:12px;font-weight:600;color:var(--sub);line-height:1;margin-bottom:3px}
+.dnum.today-n{background:var(--green);color:#fff;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:11px}
+.dnum.sun{color:var(--red)}
+.dnum.sat{color:var(--blue)}
+.dkg{font-size:13px;font-weight:800;color:var(--green);line-height:1.2}
+.dyen{font-size:11px;font-weight:700;color:var(--orange)}
+.drec{font-size:9px;color:var(--orange);margin-top:1px}
+/* Toast */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(60px);font-weight:700;padding:10px 22px;border-radius:20px;font-size:13px;z-index:999;transition:transform .2s;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,.2)}
+.toast.on{transform:translateX(-50%) translateY(0)}
+.empty{text-align:center;padding:24px;color:#bbb;font-size:13px}
+.loading{text-align:center;padding:20px;color:var(--sub);font-size:13px}
+.init-note{font-size:12px;color:var(--orange);background:#fff8f5;border:1px solid #ffe0cc;border-radius:10px;padding:10px 12px;margin-bottom:13px;line-height:1.7}
 </style>
 </head>
 <body>
 
 <header class="hdr">
-  <div class="hdr-l">
-    <span class="hdr-icon">🍄</span>
-    <div>
-      <div class="hdr-title">収穫予測</div>
-      <div class="hdr-sub">栄ガーデン · Owner</div>
-    </div>
+  <div class="hdr-top">
+    <h1>🍄 収穫予測</h1>
+    <button class="reload" onclick="loadAll()">↻ 更新</button>
   </div>
-  <button class="reload" onclick="loadAll()">↻ 更新</button>
+  <div class="nav-tabs">
+    <button class="ntab on" onclick="go('forecast',this)"><span class="ntab-icon">📅</span>収穫予測</button>
+    <button class="ntab" onclick="go('initial',this)"><span class="ntab-icon">🌱</span>初期在庫</button>
+  </div>
 </header>
-
-<nav class="nav">
-  <button class="nb on" onclick="go('forecast',this)"><span>📅</span>収穫予測</button>
-  <button class="nb" onclick="go('initial',this)"><span>🌱</span>初期在庫</button>
-</nav>
 
 <div class="main">
 
@@ -94,28 +104,34 @@ body{font-family:'Hiragino Kaku Gothic Pro','Meiryo',Arial,sans-serif;background
 
 <!-- ══ 初期在庫 ══ -->
 <div id="tab-initial" class="tab">
+  <div class="init-note">
+    💡 アプリ運用開始時に一度だけ使います。<br>
+    栽培舎にある菌床を実際の作業日で入力してください。
+  </div>
   <div class="card">
-    <div class="card-t">🌱 初期在庫を追加</div>
-    <div class="init-note">
-      💡 アプリ運用開始時に一度だけ使います。<br>
-      栽培舎にある菌床を実際の作業日で入力してください。
+    <div class="card-hdr">🌱 初期在庫を追加</div>
+    <div class="frow">
+      <span class="frow-lbl">作業日</span>
+      <input type="date" id="ini-date">
     </div>
-    <div class="row2">
-      <div><label class="fl">作業日</label><input type="date" id="ini-date" class="inp"></div>
-      <div><label class="fl">個数</label><input type="number" id="ini-count" class="inp" placeholder="例: 200" min="1"></div>
+    <div class="frow">
+      <span class="frow-lbl">個数</span>
+      <div class="frow-inp">
+        <input type="number" id="ini-count" placeholder="0" min="1">
+        <span class="frow-unit">個</span>
+      </div>
     </div>
-    <div style="margin-bottom:13px">
-      <label class="fl">種別</label>
-      <div class="type-grid" id="ini-type-grid"></div>
+    <div class="type-grid" id="ini-type-grid"></div>
+    <div style="padding:12px 14px">
+      <button class="submit-btn" onclick="addInitial()">＋ 追加</button>
     </div>
-    <button class="btn btn-sm" onclick="addInitial()">＋ 追加</button>
   </div>
 
-  <div class="sec">登録済み <span class="badge" id="ini-cnt">0</span></div>
+  <div class="slbl">登録済み <span id="ini-cnt" style="font-weight:400;color:var(--sub)">0件</span></div>
   <div id="ini-list"></div>
   <div style="display:flex;gap:9px;margin-top:12px">
-    <button class="btn" style="flex:1" onclick="saveInitial()">💾 確定・保存する</button>
-    <button class="btn-outline" style="color:var(--red);border-color:rgba(255,82,82,.3)" onclick="clearInitial()">🗑 全クリア</button>
+    <button class="submit-btn" style="flex:1;padding:12px" onclick="saveInitial()">💾 確定・保存する</button>
+    <button class="del-btn" style="color:var(--red);border-color:rgba(192,57,43,.3);padding:10px 14px" onclick="clearInitial()">🗑 全クリア</button>
   </div>
 </div>
 
@@ -123,48 +139,43 @@ body{font-family:'Hiragino Kaku Gothic Pro','Meiryo',Arial,sans-serif;background
 <div class="toast" id="toast"></div>
 
 <script>
-var API = 'https://script.google.com/macros/s/AKfycbw8BfOGR-zFremHC58Huz57dFJxmPxeEe5sDotr05sDbZIjD56269S79ikKWKpovdP1/exec';
-var PRICE = 1500;
+var API='https://script.google.com/macros/s/AKfycbw8BfOGR-zFremHC58Huz57dFJxmPxeEe5sDotr05sDbZIjD56269S79ikKWKpovdP1/exec';
+var PRICE=1500;
 
-var TYPES = {
-  bag:   {label:'袋出し',  delay:10, yield_g:400, color:'#00e676', icon:'🍄'},
-  soak1: {label:'1番浸水', delay:12, yield_g:250, color:'#40c4ff', icon:'💧'},
-  soak2: {label:'2番浸水', delay:12, yield_g:150, color:'#ce93d8', icon:'💜'},
+var TYPES={
+  bag:  {label:'袋出し', delay:10,yield_g:400,color:'#2d7a4f',icon:'🍄'},
+  soak1:{label:'1番浸水',delay:12,yield_g:250,color:'#1a5fa8',icon:'💧'},
+  soak2:{label:'2番浸水',delay:12,yield_g:150,color:'#7b1fa2',icon:'💜'},
 };
-var HLABELS = {bag:'1番刈り取り', soak1:'2番刈り取り', soak2:'3番刈り取り'};
+var HLABELS={bag:'1番刈り取り',soak1:'2番刈り取り',soak2:'3番刈り取り'};
 
-var entries=[], records=[], initialStock=[], iniLocal=[];
-var selIniType='bag', cbN=0;
+var entries=[],records=[],initialStock=[],iniLocal=[],selIniType='bag',cbN=0;
 
-function td(){ return new Date().toISOString().split('T')[0]; }
-function addDays(s,n){ var d=new Date(s+'T00:00:00'); d.setDate(d.getDate()+n); return d.toISOString().split('T')[0]; }
-function fmt(s){
-  if(!s) return '';
-  var d=new Date(s+'T00:00:00');
-  return (d.getMonth()+1)+'/'+(d.getDate())+'('+'日月火水木金土'[d.getDay()]+')';
-}
+function td(){return new Date().toISOString().split('T')[0];}
+function addDays(s,n){var d=new Date(s+'T00:00:00');d.setDate(d.getDate()+n);return d.toISOString().split('T')[0];}
+function fmt(s){if(!s)return'';var d=new Date(s+'T00:00:00');return(d.getMonth()+1)+'/'+d.getDate()+'('+'日月火水木金土'[d.getDay()]+')';}
 function toast(msg,err){
   var t=document.getElementById('toast');
-  t.textContent=msg; t.style.background=err?'#ff5252':'#00e676'; t.style.color=err?'#fff':'#000';
-  t.classList.add('on'); setTimeout(function(){ t.classList.remove('on'); },2500);
+  t.textContent=msg;t.style.background=err?'#c0392b':'#2d7a4f';t.style.color='#fff';
+  t.classList.add('on');setTimeout(function(){t.classList.remove('on');},2500);
 }
 function jsonp(url,ok,ng){
-  var n='cb'+(cbN++), s=document.createElement('script');
-  var t=setTimeout(function(){ cleanup(); if(ng) ng('timeout'); },15000);
-  function cleanup(){ clearTimeout(t); delete window[n]; if(s.parentNode) s.parentNode.removeChild(s); }
-  window[n]=function(d){ cleanup(); ok(d); };
-  s.onerror=function(){ cleanup(); if(ng) ng('error'); };
+  var n='cb'+(cbN++),s=document.createElement('script');
+  var t=setTimeout(function(){cleanup();if(ng)ng('timeout');},15000);
+  function cleanup(){clearTimeout(t);delete window[n];if(s.parentNode)s.parentNode.removeChild(s);}
+  window[n]=function(d){cleanup();ok(d);};
+  s.onerror=function(){cleanup();if(ng)ng('error');};
   s.src=url+(url.indexOf('?')>-1?'&':'?')+'callback='+n;
   document.body.appendChild(s);
 }
-function api(params,ok,ng){
-  var q=Object.keys(params).map(function(k){ return k+'='+encodeURIComponent(params[k]); }).join('&');
+function api(p,ok,ng){
+  var q=Object.keys(p).map(function(k){return k+'='+encodeURIComponent(p[k]);}).join('&');
   jsonp(API+'?'+q,ok,ng);
 }
 
 function go(name,btn){
-  document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('on'); });
-  document.querySelectorAll('.nb').forEach(function(b){ b.classList.remove('on'); });
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');});
+  document.querySelectorAll('.ntab').forEach(function(b){b.classList.remove('on');});
   document.getElementById('tab-'+name).classList.add('on');
   btn.classList.add('on');
 }
@@ -178,65 +189,43 @@ window.addEventListener('load',function(){
 function loadAll(){
   document.getElementById('cal-area').innerHTML='<div class="loading">データ読み込み中...</div>';
   api({action:'getEntries'},function(res){
-    if(res.success){ entries=res.entries||[]; renderCal(); }
-  },function(){ document.getElementById('cal-area').innerHTML='<div class="empty">取得失敗。↻ 更新をお試しください</div>'; });
-  api({action:'getRecords'},function(res){
-    if(res.success){ records=res.records||[]; renderCal(); }
-  },null);
-  api({action:'getInitial'},function(res){
-    if(res.success){ initialStock=res.initial||[]; iniLocal=[]; renderIniList(); renderCal(); }
-  },null);
+    if(res.success){entries=res.entries||[];renderCal();}
+  },function(){document.getElementById('cal-area').innerHTML='<div class="empty">取得失敗。↻ 更新をお試しください</div>';});
+  api({action:'getRecords'},function(res){if(res.success){records=res.records||[];renderCal();}},null);
+  api({action:'getInitial'},function(res){if(res.success){initialStock=res.initial||[];iniLocal=[];renderIniList();renderCal();}},null);
 }
 
-// ── 収穫予測カレンダー ────────────────────────────────────────
+// ── カレンダー ────────────────────────────────────────────────
 function calcForecast(){
-  var allEnts=entries.concat(initialStock);
-  var map={};
-  for(var i=0;i<35;i++) map[addDays(td(),i)]={total:0,breakdown:{}};
-  allEnts.forEach(function(e){
+  var allE=entries.concat(initialStock),map={};
+  for(var i=0;i<35;i++) map[addDays(td(),i)]={total:0};
+  allE.forEach(function(e){
     var type=e.type==='unripe_bag'||e.type==='ripe_bag'?'bag':e.type;
-    var cfg=TYPES[type]; if(!cfg||!cfg.yield_g) return;
+    var cfg=TYPES[type];if(!cfg||!cfg.yield_g)return;
     var hd=addDays(e.date,cfg.delay);
-    if(map[hd]){
-      var kg=e.count*cfg.yield_g/1000;
-      map[hd].total+=kg;
-      map[hd].breakdown[type]=(map[hd].breakdown[type]||0)+kg;
-    }
+    if(map[hd]) map[hd].total+=e.count*cfg.yield_g/1000;
   });
   return map;
 }
-
 function renderCal(){
-  var now=td();
-  var fc=calcForecast();
-  var recMap={};
-  records.forEach(function(r){ recMap[r.date]=r; });
-
-  // 今日から30日
-  var days=[];
-  for(var i=0;i<30;i++) days.push(addDays(now,i));
-
-  // 週ごとに並べる（今日の曜日から始まる）
+  var now=td(),fc=calcForecast(),recMap={};
+  records.forEach(function(r){recMap[r.date]=r;});
+  var days=[];for(var i=0;i<30;i++) days.push(addDays(now,i));
   var startDow=new Date(now+'T00:00:00').getDay();
-  var weeks=[], week=[];
+  var weeks=[],week=[];
   for(var p=0;p<startDow;p++) week.push(null);
-  days.forEach(function(d){
-    week.push(d);
-    if(week.length===7){ weeks.push(week); week=[]; }
-  });
-  if(week.length>0){ while(week.length<7) week.push(null); weeks.push(week); }
+  days.forEach(function(d){week.push(d);if(week.length===7){weeks.push(week);week=[];}});
+  if(week.length>0){while(week.length<7)week.push(null);weeks.push(week);}
 
   var DOW=['日','月','火','水','木','金','土'];
-  var DOW_COLOR=['#ff5252','#f0f0f0','#f0f0f0','#f0f0f0','#f0f0f0','#f0f0f0','#40c4ff'];
-
   var html='<div class="cal-wrap"><table class="cal"><thead><tr>'
-    +DOW.map(function(w,i){ return '<th style="color:'+DOW_COLOR[i]+'">'+w+'</th>'; }).join('')
+    +DOW.map(function(w){return'<th>'+w+'</th>';}).join('')
     +'</tr></thead><tbody>';
 
   weeks.forEach(function(wk){
     html+='<tr>';
     wk.forEach(function(d,wi){
-      if(!d){ html+='<td><div class="day-cell empty-day"></div></td>'; return; }
+      if(!d){html+='<td><div class="dcell noday"></div></td>';return;}
       var f=fc[d]||{total:0};
       var rec=recMap[d];
       var isToday=(d===now);
@@ -244,36 +233,19 @@ function renderCal(){
       var dayN=parseInt(d.slice(8));
       var monN=parseInt(d.slice(5,7));
       var isFirst=(dayN===1);
-
-      var dnClass=isToday?'today':(dow===0?'sun':dow===6?'sat':'');
-      var dnContent=isToday?'<span style="background:var(--g);color:#000;border-radius:50%;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:10px">'+dayN+'</span>'
-        :(isFirst?'<span style="font-size:9px;color:var(--tx2)">'+monN+'月</span><br>':'')
-        +'<span style="color:'+(dow===0?'var(--red)':dow===6?'var(--blue)':'var(--tx2)')+'">'+dayN+'</span>';
-
-      html+='<td>'
-        +'<div class="day-cell'+(isToday?' today':'')+'">'
-        +'<div class="day-num">'+dnContent+'</div>'
-        +(f.total>0?'<div class="day-kg">'+f.total.toFixed(1)+'<span style="font-size:9px;font-weight:600">kg</span></div>':'')
-        +(f.total>0?'<div class="day-yen">¥'+(f.total*PRICE).toLocaleString()+'</div>':'')
-        +(rec?'<div class="day-rec">実績✓</div>':'')
+      var dnCls=isToday?'today-n':(dow===0?'sun':dow===6?'sat':'');
+      var dnContent=isToday?dayN:(isFirst?'<span style="font-size:9px;display:block;color:var(--sub)">'+monN+'月</span>'+dayN:dayN);
+      html+='<td><div class="dcell'+(isToday?' today':'')+'">'
+        +'<div class="dnum '+(isToday?'today-n':'')+(dow===0&&!isToday?'sun':'')+(dow===6&&!isToday?'sat':'')+'">'
+        +dnContent+'</div>'
+        +(f.total>0?'<div class="dkg">'+f.total.toFixed(1)+'<span style="font-size:9px;font-weight:500">kg</span></div>':'')
+        +(f.total>0?'<div class="dyen">¥'+(f.total*PRICE).toLocaleString()+'</div>':'')
+        +(rec?'<div class="drec">実績✓</div>':'')
         +'</div></td>';
     });
     html+='</tr>';
   });
-
   html+='</tbody></table></div>';
-
-  // 凡例
-  html+='<div style="display:flex;gap:12px;margin-top:10px;flex-wrap:wrap">'
-    +Object.keys(TYPES).map(function(k){
-      var v=TYPES[k];
-      return '<div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--tx2)">'
-        +'<span style="width:9px;height:9px;border-radius:2px;background:'+v.color+';display:inline-block"></span>'
-        +(HLABELS[k]||v.label)+' ('+v.delay+'日後)'
-        +'</div>';
-    }).join('')
-    +'</div>';
-
   document.getElementById('cal-area').innerHTML=html;
 }
 
@@ -282,68 +254,66 @@ function buildIniTypeGrid(){
   var g=document.getElementById('ini-type-grid');
   g.innerHTML=Object.keys(TYPES).map(function(k){
     var v=TYPES[k];
-    var sel=k===selIniType?' sel-'+k:'';
-    return '<button class="tbtn'+sel+'" id="itb-'+k+'" onclick="selIni(\''+k+'\')">'
-      +'<span style="font-size:17px">'+v.icon+'</span>'
+    return '<button class="tbtn'+(k===selIniType?' sel-'+k:'')+'" id="itb-'+k+'" onclick="selIni(\''+k+'\')">'
+      +'<span style="font-size:18px">'+v.icon+'</span>'
       +'<span style="font-size:12px;font-weight:700">'+v.label+'</span>'
-      +'<span style="font-size:10px;color:var(--tx3)">'+v.delay+'日後 '+v.yield_g+'g</span>'
+      +'<span style="font-size:10px;color:var(--sub)">'+v.delay+'日後 '+v.yield_g+'g</span>'
       +'</button>';
   }).join('');
 }
-function selIni(k){
-  selIniType=k;
-  buildIniTypeGrid();
-}
+function selIni(k){selIniType=k;buildIniTypeGrid();}
 function addInitial(){
   var date=document.getElementById('ini-date').value;
   var count=parseInt(document.getElementById('ini-count').value);
-  if(!date||!count||count<=0){ toast('日付と個数を入力してください',true); return; }
+  if(!date||!count||count<=0){toast('日付と個数を入力してください',true);return;}
   iniLocal.push({id:'L'+Date.now(),date:date,type:selIniType,count:count});
   renderIniList();
 }
 function renderIniList(){
   var all=initialStock.concat(iniLocal);
-  document.getElementById('ini-cnt').textContent=all.length;
+  document.getElementById('ini-cnt').textContent=all.length+'件';
   var el=document.getElementById('ini-list');
-  if(!all.length){ el.innerHTML='<div class="empty">まだ登録なし</div>'; return; }
+  if(!all.length){el.innerHTML='<div class="empty">まだ登録なし</div>';return;}
   el.innerHTML=all.map(function(e,i){
     var cfg=TYPES[e.type]||TYPES.bag;
     var hd=addDays(e.date,cfg.delay);
-    var isLocal=e.id&&e.id.toString().indexOf('L')===0;
+    var isL=e.id&&e.id.toString().indexOf('L')===0;
     return '<div class="irow">'
-      +'<span style="font-size:17px">'+cfg.icon+'</span>'
-      +'<div style="flex:1"><div style="font-size:12px;font-weight:700">'+cfg.label+' <strong>'+e.count.toLocaleString()+'個</strong></div>'
-      +'<div style="font-size:11px;color:var(--tx2)">'+fmt(e.date)+' → '+fmt(hd)+' に '+(e.count*cfg.yield_g/1000).toFixed(1)+'kg</div></div>'
-      +(isLocal?'<span class="tag" style="background:rgba(255,145,0,.15);color:var(--org)">未保存</span>'
-               :'<span class="tag" style="background:rgba(0,230,118,.1);color:var(--g)">保存済</span>')
-      +'<button class="btn-del" onclick="removeIni('+i+',\''+e.id+'\')">削除</button>'
+      +'<span style="font-size:18px">'+cfg.icon+'</span>'
+      +'<div style="flex:1">'
+      +'<div style="font-size:13px;font-weight:700">'+cfg.label+' <strong>'+e.count.toLocaleString()+'個</strong></div>'
+      +'<div style="font-size:11px;color:var(--sub);margin-top:1px">'+fmt(e.date)+' → '+fmt(hd)+' に '+(e.count*cfg.yield_g/1000).toFixed(1)+'kg</div>'
+      +'</div>'
+      +(isL?'<span class="tag" style="background:#fff3e0;color:var(--orange)">未保存</span>'
+           :'<span class="tag" style="background:var(--green-bg);color:var(--green)">保存済</span>')
+      +'<button class="del-btn" onclick="removeIni('+i+',\''+e.id+'\')">削除</button>'
       +'</div>';
   }).join('');
 }
 function removeIni(idx,id){
-  var li=iniLocal.findIndex(function(x){ return x.id===id; });
-  if(li>=0){ iniLocal.splice(li,1); renderIniList(); return; }
-  initialStock=initialStock.filter(function(x){ return x.id!==id; });
+  var li=iniLocal.findIndex(function(x){return x.id===id;});
+  if(li>=0){iniLocal.splice(li,1);renderIniList();return;}
+  initialStock=initialStock.filter(function(x){return x.id!==id;});
   renderIniList();
 }
 function saveInitial(){
   var all=initialStock.concat(iniLocal);
   api({action:'saveInitial',data:JSON.stringify(all)},
     function(res){
-      if(res.success){ initialStock=all; iniLocal=[]; renderIniList(); renderCal(); toast('✅ 保存しました'); }
+      if(res.success){initialStock=all;iniLocal=[];renderIniList();renderCal();toast('✅ 保存しました');}
       else toast('エラー: '+res.error,true);
     },
-    function(){ toast('通信エラー',true); }
+    function(){toast('通信エラー',true);}
   );
 }
 function clearInitial(){
-  if(!confirm('初期在庫を全て削除しますか？')) return;
+  if(!confirm('初期在庫を全て削除しますか？'))return;
   api({action:'clearInitial'},
     function(res){
-      if(res.success){ initialStock=[]; iniLocal=[]; renderIniList(); renderCal(); toast('🗑 クリアしました'); }
+      if(res.success){initialStock=[];iniLocal=[];renderIniList();renderCal();toast('🗑 クリアしました');}
       else toast('エラー',true);
     },
-    function(){ toast('通信エラー',true); }
+    function(){toast('通信エラー',true);}
   );
 }
 </script>
